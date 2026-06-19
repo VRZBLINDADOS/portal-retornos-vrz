@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Portal Retornos VRZ</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+:root{
+  --red:#DC1F1F;--red-deep:#A81515;--red-light:#FFF0F0;
+  --black:#0D0D0D;--ink:#1A1A1A;--smoke:#F7F5F3;--border:#E8E3E0;--muted:#9A9189;
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:#fff;overflow:hidden;color:var(--ink)}
+.mono{font-family:'JetBrains Mono',monospace}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes pulse-beacon{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.fade-up{animation:fadeUp .35s cubic-bezier(.22,1,.36,1) forwards}
+.fade-in{animation:fadeIn .25s ease forwards}
+.slide-in{animation:slideIn .28s cubic-bezier(.22,1,.36,1) forwards}
+.shake{animation:shake .25s ease-in-out 0s 2}
+.spin{animation:spin 1s linear infinite}
+.pulse-beacon{animation:pulse-beacon 2s ease-in-out infinite}
+.skeleton{background:linear-gradient(90deg,#f0ece8 25%,#e8e3df 50%,#f0ece8 75%);background-size:200% 100%;animation:shimmer 1.8s infinite}
+
+.scroll-y{overflow-y:auto}
+.scroll-y::-webkit-scrollbar{width:3px}
+.scroll-y::-webkit-scrollbar-track{background:transparent}
+.scroll-y::-webkit-scrollbar-thumb{background:var(--border);border-radius:999px}
+
+.nav-item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;cursor:pointer;transition:all .18s;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:rgba(255,255,255,.4);border:none;background:transparent;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif}
+.nav-item:hover{background:rgba(255,255,255,.12);color:#fff}
+.nav-item.active{background:#fff;color:var(--ink)}
+.nav-item .nav-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:7px;background:rgba(255,255,255,.08);flex-shrink:0;transition:all .18s}
+.nav-item.active .nav-icon{background:var(--red)}
+.nav-item:hover:not(.active) .nav-icon{background:rgba(255,255,255,.18)}
+
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:#fff;border-top:1px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -8px 30px rgba(0,0,0,.06)}
+.bottom-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;gap:4px;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:color .2s;-webkit-tap-highlight-color:transparent;min-width:0;font-family:'Plus Jakarta Sans',sans-serif}
+.bottom-nav-btn.active{color:var(--red)}
+.bottom-nav-btn span{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;line-height:1}
+
+.input{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;outline:none;background:#fff;transition:border-color .2s,box-shadow .2s;color:var(--ink)}
+.input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(220,31,31,.08)}
+.input::placeholder{color:var(--muted);font-weight:500}
+
+.btn-primary{background:var(--red);color:#fff;border:none;border-radius:10px;padding:13px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary:hover{background:var(--red-deep)}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{background:#e0d9d5;color:#b0a9a4;cursor:not-allowed;transform:none}
+.btn-ghost{background:var(--smoke);color:var(--ink);border:1.5px solid var(--border);border-radius:10px;padding:11px 20px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;transition:all .2s}
+.btn-ghost:hover{border-color:var(--ink);background:#fff}
+
+.card{background:#fff;border:1.5px solid var(--border);border-radius:16px;overflow:hidden}
+
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.badge-pending{background:#FFF4E6;color:#C45E00;border:1px solid #FFD9A8}
+.badge-working{background:#EAF0FF;color:#1A4EC2;border:1px solid #C0D0F5}
+.badge-done{background:#EDFAF3;color:#0A6B34;border:1px solid #AAE6C5}
+.badge-master{background:linear-gradient(135deg,#0D0D0D,#2A0808);color:#FFD700;border:1px solid #8B6914}
+.badge-admin{background:var(--red);color:#fff}
+.badge-sol{background:#1A4EC2;color:#fff}
+.badge-reader{background:var(--muted);color:#fff}
+
+.pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;font-size:9px;font-weight:800;text-transform:uppercase;border:1px solid var(--border)}
+
+.vtable thead{background:var(--smoke)}
+.vtable thead th{padding:10px 14px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--border)}
+.vtable tbody tr{border-bottom:1px solid var(--smoke)}
+.vtable tbody tr:hover{background:var(--smoke)}
+.vtable tbody td{padding:10px 14px;font-size:11px;color:var(--ink)}
+
+.progress-track{height:5px;background:var(--smoke);border-radius:999px;overflow:hidden}
+.progress-fill{height:100%;border-radius:999px;transition:width .7s cubic-bezier(.22,1,.36,1)}
+
+.cat-chip{display:inline-flex;align-items:center;padding:3px 9px;border-radius:6px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;background:#FFF0F0;color:var(--red);border:1px solid #FFBDBD}
+.area-chip{display:inline-flex;align-items:center;padding:3px 9px;border-radius:6px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;background:#EAF0FF;color:#1A4EC2;border:1px solid #C0D0F5}
+
+.excel-input{border:none;width:100%;height:100%;padding:6px 10px;background:transparent;font-size:11px;font-family:'Plus Jakarta Sans',sans-serif;outline:none}
+.excel-input:focus{background:#FFFBE6;box-shadow:inset 0 0 0 2px var(--red)}
+
+.check-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:500;border:1.5px solid var(--border);transition:all .12s;background:#fff;user-select:none}
+.check-chip.selected{background:var(--red-light);border-color:#FFBDBD;color:var(--red);font-weight:700}
+.check-chip-area{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:500;border:1.5px solid var(--border);transition:all .12s;background:#fff;user-select:none}
+.check-chip-area.selected{background:#EAF0FF;border-color:#C0D0F5;color:#1A4EC2;font-weight:700}
+
+@media(max-width:767px){
+  .card{border-radius:12px}
+  .input{font-size:14px}
+}
+.login-bg{background:linear-gradient(145deg,#0D0D0D 0%,#1A0505 60%,#2A0808 100%)}
+.divider{display:flex;align-items:center;gap:10px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+</style>
+<script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+
+// ── Firebase ──────────────────────────────────────────────────────────────
+const FB={apiKey:"AIzaSyBT1N43mp6hoxXOj6bmTlqouQWSmfn32-E",authDomain:"portal-compras-vrz.firebaseapp.com",projectId:"portal-compras-vrz",storageBucket:"portal-compras-vrz.firebasestorage.app",messagingSenderId:"713014398002",appId:"1:713014398002:web:d89f485af020178b00002b"};
+if(!firebase.apps.length)firebase.initializeApp(FB);
+const db=firebase.firestore();
+const auth=firebase.auth();
+const AID='portal-retornos-vrz';
+const col=(c)=>db.collection('artifacts').doc(AID).collection('public').doc('data').collection(c);
+const{useState,useEffect,useMemo,useRef,useCallback}=React;
+
+// ── Constantes ────────────────────────────────────────────────────────────
+const MASTER_USER='Lucas.Sabino';
+const UNIDADES=['Unidade 1','Unidade 2','Unidade 3'];
+const MODALIDADES=['Cliente Final','Multimarcas','AT - OS em andamento','AT - OS encerrada','Consignado'];
+const AGENDAMENTOS=['Interno','Externo','Express'];
+const STATUS_LIST=['Pendente','Em Trabalho','Concluído'];
+const CATEGORIAS=[
+  'Acabamentos','Barulho','Barulho de vento','Câmera','Colisão',
+  'Delaminação','Dupla imagem','Elétrica','Funcionamento de vidro',
+  'Funcionamento de ar-condicionado','Infiltração','Riscos',
+  'Ruídos internos','Tampa traseira','Teto solar com não conformidade',
+  'Trinca','Vidro','Outro'
+];
+const AREAS_PROBLEMA=['Desmontagem','Opaco','Vidro','Montagem','Forro','Elétrica','Pintura','Estética'];
+
+const INIT_USERS=[
+  {user:'Lucas.Sabino',pass:'29623298',active:true,role:'master'},
+];
+
+// Permissões revisadas:
+// leitor: histórico + indicadores
+// solicitante: abrir + histórico + indicadores
+// admin: abrir + histórico + indicadores + gestão (somente visualização)
+// master: tudo
+function canDo(role,action){
+  const p={
+    master:{newReq:true,history:true,manage:true,manageEdit:true,users:true,dashboard:true,deleteReq:true},
+    admin: {newReq:true,history:true,manage:true,manageEdit:false,users:false,dashboard:true,deleteReq:false},
+    solicitante:{newReq:true,history:true,manage:false,manageEdit:false,users:false,dashboard:true,deleteReq:false},
+    leitor:{newReq:false,history:true,manage:false,manageEdit:false,users:false,dashboard:true,deleteReq:false},
+  };
+  return !!(p[role||'solicitante']?.[action]);
+}
+
+const sanitize=(v)=>typeof v!=='string'?v:DOMPurify.sanitize(v);
+
+function stripUndefined(obj){
+  if(Array.isArray(obj))return obj.map(stripUndefined);
+  if(obj!==null&&typeof obj==='object'){
+    const out={};
+    Object.entries(obj).forEach(([k,v])=>{if(v!==undefined)out[k]=stripUndefined(v);});
+    return out;
+  }
+  return obj;
+}
+
+function fmtDate(ts){return ts?new Date(ts).toLocaleDateString('pt-BR'):'—';}
+
+function todayStr(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ── Hooks ─────────────────────────────────────────────────────────────────
+const useFirestore=(collectionName)=>{
+  const[data,setData]=useState([]);const[loading,setLoading]=useState(true);
+  useEffect(()=>{
+    setLoading(true);
+    const u=col(collectionName).onSnapshot(s=>{
+      setData(s.docs.map(d=>({id:d.id,...d.data()})));setLoading(false);
+    },()=>setLoading(false));
+    return u;
+  },[collectionName]);
+  return{data,loading};
+};
+
+// ── Icon ──────────────────────────────────────────────────────────────────
+function Icon({name,size=18,className='',style={}}){
+  const ref=useRef(null);
+  useEffect(()=>{
+    if(ref.current&&window.lucide){
+      const d=window.lucide.icons[name];
+      if(d){
+        const[,at,ch]=d;
+        const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+        Object.entries({...at,width:size,height:size,class:`lucide ${className}`,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor','stroke-width':1.8,'stroke-linecap':'round','stroke-linejoin':'round'}).forEach(([k,v])=>svg.setAttribute(k,v));
+        ch.forEach(([t,a])=>{const el=document.createElementNS('http://www.w3.org/2000/svg',t);Object.entries(a).forEach(([k,v])=>el.setAttribute(k,v));svg.appendChild(el);});
+        ref.current.innerHTML='';ref.current.appendChild(svg);
+      }
+    }
+  },[name,size,className]);
+  return <span ref={ref} style={style} className="inline-flex shrink-0 items-center justify-center" role="img" aria-label={name}/>;
+}
+
+// ── Badges ────────────────────────────────────────────────────────────────
+function StatusBadge({status}){
+  const map={
+    'Pendente':'badge-pending',
+    'Em Trabalho':'badge-working',
+    'Concluído':'badge-done',
+  };
+  return <span className={`badge ${map[status]||'badge-pending'}`}>{status}</span>;
+}
+function RoleBadge({role}){
+  const r=role||'solicitante';
+  const map={master:'badge-master',admin:'badge-admin',solicitante:'badge-sol',leitor:'badge-reader'};
+  const labels={master:'★ Master',admin:'Admin',solicitante:'Solicitante',leitor:'Leitor'};
+  return <span className={`badge ${map[r]||'badge-sol'}`}>{labels[r]||r}</span>;
+}
+
+// ── Skeleton ──────────────────────────────────────────────────────────────
+const Skeleton=()=>(
+  <div style={{padding:24}}>
+    {[1,2,3].map(i=>(
+      <div key={i} className="card" style={{padding:20,marginBottom:12}}>
+        <div className="skeleton" style={{height:14,width:'40%',borderRadius:8,marginBottom:10}}/>
+        <div className="skeleton" style={{height:10,width:'65%',borderRadius:8,marginBottom:10}}/>
+        <div className="skeleton" style={{height:60,borderRadius:12}}/>
+      </div>
+    ))}
+  </div>
+);
+
+const NetworkStatus=()=>{
+  const[online,setOnline]=useState(navigator.onLine);
+  useEffect(()=>{const h=()=>setOnline(navigator.onLine);window.addEventListener('online',h);window.addEventListener('offline',h);return()=>{window.removeEventListener('online',h);window.removeEventListener('offline',h);};},[]);
+  if(online)return null;
+  return <div style={{position:'fixed',top:0,left:0,right:0,background:'#F59E0B',color:'#000',textAlign:'center',padding:'6px',fontSize:'11px',fontWeight:700,zIndex:1000}}>📡 Modo Offline</div>;
+};
+
+// ── PDF Export ────────────────────────────────────────────────────────────
+function exportListPDF(title,dataset){
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF('p','mm','a4');
+  doc.setFillColor(13,13,13);doc.rect(0,0,210,30,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont('helvetica','bold');
+  doc.text('VRZ RETORNOS — RELATÓRIO',12,14);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text(`Filtro: ${title} | Emissão: ${new Date().toLocaleString('pt-BR')}`,12,22);
+  const rows=dataset.map(r=>[r.os,r.vehicleData?.cliente||'—',r.vehicleData?.modelo||'—',r.unidade,r.modalidade,r.tipoAgendamento,r.status]);
+  doc.autoTable({
+    startY:35,
+    head:[['OS','Cliente','Veículo','Unidade','Modalidade','Agendamento','Status']],
+    body:rows,
+    headStyles:{fillColor:[220,31,31],fontSize:8,fontStyle:'bold'},
+    bodyStyles:{fontSize:8},
+    theme:'striped'
+  });
+  doc.save(`VRZ_Retornos_${title.replace(/\s+/g,'_')}.pdf`);
+}
+
+function exportSinglePDF(r){
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF();
+  doc.setFillColor(27,27,27);doc.rect(0,0,210,40,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(16);
+  doc.text(`RETORNO DE OS — #${r.os}`,14,18);
+  doc.setFontSize(9);
+  doc.text(`Status: ${r.status.toUpperCase()} | Responsável: ${r.responsavel}`,14,28);
+  doc.setTextColor(0,0,0);
+  let y=50;
+  doc.setFontSize(11);doc.setFont('helvetica','bold');
+  doc.text('INFORMAÇÕES DA ORDEM DE SERVIÇO',14,y);y+=8;
+  doc.setFont('helvetica','normal');doc.setFontSize(9);
+  doc.text(`Cliente: ${r.vehicleData?.cliente||'—'}`,14,y);doc.text(`Modelo: ${r.vehicleData?.modelo||'—'}`,110,y);y+=6;
+  doc.text(`Chassi: ${r.vehicleData?.chassi||'—'}`,14,y);doc.text(`Vendedor: ${r.vehicleData?.vendedor||'—'}`,110,y);y+=6;
+  doc.text(`Parceiro: ${r.vehicleData?.parceiro||'—'}`,14,y);doc.text(`Modalidade: ${r.modalidade}`,110,y);y+=6;
+  doc.text(`Unidade: ${r.unidade}`,14,y);doc.text(`Agendamento: ${r.tipoAgendamento}`,110,y);y+=6;
+  doc.text(`Local: ${r.localAtendimento||'—'}`,14,y);doc.text(`Data reclamação: ${r.dateReclamacao||'—'}`,110,y);y+=10;
+  doc.setFont('helvetica','bold');doc.text('CATEGORIAS:',14,y);y+=6;
+  doc.setFont('helvetica','normal');
+  const cats=doc.splitTextToSize((r.categorias||[]).join(', '),180);
+  doc.text(cats,14,y);y+=cats.length*5+4;
+  if(r.areasProblema?.length>0){
+    doc.setFont('helvetica','bold');doc.text('ÁREAS DO PROBLEMA:',14,y);y+=6;
+    doc.setFont('helvetica','normal');
+    const areas=doc.splitTextToSize(r.areasProblema.join(', '),180);
+    doc.text(areas,14,y);y+=areas.length*5+4;
+  }
+  doc.setFont('helvetica','bold');doc.text('RELATO DO PROBLEMA:',14,y);y+=6;
+  doc.setFont('helvetica','normal');
+  const desc=doc.splitTextToSize(r.descricao||'—',180);
+  doc.text(desc,14,y);y+=desc.length*5+8;
+  if(r.observacaoConclusao){
+    doc.setFont('helvetica','bold');doc.setTextColor(10,107,52);
+    doc.text('OBSERVAÇÃO DE CONCLUSÃO:',14,y);y+=6;
+    doc.setFont('helvetica','normal');doc.setTextColor(0,0,0);
+    const obs=doc.splitTextToSize(r.observacaoConclusao,180);
+    doc.text(obs,14,y);
+  }
+  doc.save(`VRZ_Retorno_OS_${r.os}.pdf`);
+}
+
+// ── ChangePasswordModal ───────────────────────────────────────────────────
+function ChangePasswordModal({loggedInUser,onClose}){
+  const[senhaAtual,setSenhaAtual]=useState('');
+  const[novaSenha,setNovaSenha]=useState('');
+  const[confirmar,setConfirmar]=useState('');
+  const[erro,setErro]=useState('');
+  const[ok,setOk]=useState(false);
+  const[loading,setLoading]=useState(false);
+  const[showCur,setShowCur]=useState(false);
+  const[showNew,setShowNew]=useState(false);
+
+  const salvar=async()=>{
+    setErro('');
+    if(senhaAtual!==loggedInUser.pass){setErro('Senha atual incorreta.');return;}
+    if(novaSenha.length<6){setErro('Nova senha precisa ter ao menos 6 caracteres.');return;}
+    if(novaSenha!==confirmar){setErro('As senhas não coincidem.');return;}
+    setLoading(true);
+    try{await col('users').doc(loggedInUser.id).update({pass:novaSenha});setOk(true);}
+    catch(e){setErro('Erro ao salvar: '+e.message);}
+    setLoading(false);
+  };
+
+  return(
+    <div style={{position:'fixed',inset:0,zIndex:800,background:'rgba(0,0,0,.85)',display:'flex',alignItems:'center',justifyContent:'center',padding:16}} className="fade-in">
+      <div style={{background:'#fff',borderRadius:24,overflow:'hidden',maxWidth:400,width:'100%'}}>
+        <div style={{background:'var(--ink)',padding:'24px 28px',display:'flex',alignItems:'center',justifyContent:'space-between',borderBottom:'4px solid var(--red)'}}>
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <div style={{width:40,height:40,background:'var(--red)',borderRadius:11,display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name="key" size={18}/></div>
+            <div>
+              <h3 style={{margin:0,fontSize:16,fontWeight:800,color:'#fff'}}>Alterar Senha</h3>
+              <p style={{margin:0,fontSize:9,color:'rgba(255,255,255,.35)',textTransform:'uppercase',letterSpacing:'.1em',marginTop:2}}>{loggedInUser.user}</p>
+            </div>
+          </div>
+          <button onClick={onClose} style={{width:34,height:34,background:'rgba(255,255,255,.08)',border:'none',borderRadius:9,cursor:'pointer',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name="x" size={18}/></button>
+        </div>
+        <div style={{padding:24}}>
+          {ok?(
+            <div style={{textAlign:'center',padding:'20px 0'}}>
+              <div style={{width:56,height:56,background:'#EDFAF3',borderRadius:16,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 16px'}}><Icon name="check-circle" size={28}/></div>
+              <h4 style={{fontSize:18,fontWeight:800,margin:'0 0 8px'}}>Senha Alterada!</h4>
+              <button onClick={onClose} className="btn-primary" style={{width:'100%',padding:13}}>Fechar</button>
+            </div>
+          ):(
+            <div style={{display:'flex',flexDirection:'column',gap:14}}>
+              {erro&&<div className="shake" style={{background:'var(--red-light)',border:'1px solid #FFBDBD',borderRadius:10,padding:'10px 14px',display:'flex',alignItems:'center',gap:8}}><Icon name="alert-circle" size={14}/><span style={{fontSize:10,fontWeight:700,color:'var(--red)'}}>{erro}</span></div>}
+              {[
+                {label:'Senha Atual',val:senhaAtual,set:setSenhaAtual,show:showCur,setShow:setShowCur},
+                {label:'Nova Senha',val:novaSenha,set:setNovaSenha,show:showNew,setShow:setShowNew},
+                {label:'Confirmar',val:confirmar,set:setConfirmar,show:false,setShow:()=>{}},
+              ].map((f,i)=>(
+                <div key={i}>
+                  <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:6}}>{f.label}</label>
+                  <div style={{position:'relative'}}>
+                    <input type={f.show?'text':'password'} value={f.val} onChange={e=>f.set(sanitize(e.target.value))} className="input" style={{paddingRight:44}} placeholder="••••••••"/>
+                    {i<2&&<button type="button" onClick={()=>f.setShow(!f.show)} style={{position:'absolute',right:12,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:2}}><Icon name={f.show?'eye-off':'eye'} size={15}/></button>}
+                  </div>
+                </div>
+              ))}
+              <div style={{display:'flex',gap:10,marginTop:4}}>
+                <button onClick={onClose} className="btn-ghost" style={{flex:1}}>Cancelar</button>
+                <button onClick={salvar} disabled={loading||!senhaAtual||!novaSenha||!confirmar} className="btn-primary" style={{flex:1}}>
+                  {loading?<Icon name="refresh-cw" size={14} className="spin"/>:<Icon name="save" size={14}/>} Salvar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── RequestForm ───────────────────────────────────────────────────────────
+function RequestForm({loggedInUser,vehiclesDB,requests}){
+  const[os,setOs]=useState('');
+  const[vehicle,setVehicle]=useState(null);
+  const[unidade,setUnidade]=useState(UNIDADES[0]);
+  const[modalidade,setModalidade]=useState(MODALIDADES[0]);
+  const[dateVendaConsignado,setDateVendaConsignado]=useState('');
+  const[tipoAgendamento,setTipoAgendamento]=useState(AGENDAMENTOS[0]);
+  const[localAtendimento,setLocalAtendimento]=useState('');
+  const[dateReclamacao,setDateReclamacao]=useState('');
+  const[dateAgendamento,setDateAgendamento]=useState('');
+  const[categorias,setCategorias]=useState([]);
+  const[outroCat,setOutroCat]=useState('');
+  const[areasProblema,setAreasProblema]=useState([]);
+  const[descricao,setDescricao]=useState('');
+  const[images,setImages]=useState([]);
+  const[video,setVideo]=useState(null);
+  const[submitting,setSubmitting]=useState(false);
+  const[done,setDone]=useState(false);
+  const[videoError,setVideoError]=useState('');
+
+  const handleOSChange=(val)=>{
+    const clean=sanitize(val);
+    setOs(clean);
+    const match=vehiclesDB.find(v=>String(v.os).trim()===clean.trim());
+    setVehicle(match||null);
+  };
+
+  const toggleCat=(cat)=>{
+    if(cat==='Outro'){
+      setCategorias(p=>p.includes('Outro')?p.filter(c=>c!=='Outro'):[...p,'Outro']);
+      return;
+    }
+    setCategorias(p=>p.includes(cat)?p.filter(c=>c!==cat):[...p,cat]);
+  };
+  const toggleArea=(area)=>setAreasProblema(p=>p.includes(area)?p.filter(a=>a!==area):[...p,area]);
+
+  const compressImage=(file)=>new Promise(resolve=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const c=document.createElement('canvas');
+        let w=img.width,h=img.height;const mx=900;
+        if(w>h&&w>mx){h*=mx/w;w=mx;}else if(h>mx){w*=mx/h;h=mx;}
+        c.width=w;c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(c.toDataURL('image/jpeg',.65));
+      };
+      img.src=e.target.result;
+    };
+    r.readAsDataURL(file);
+  });
+
+  const handleImageUpload=async(e)=>{
+    const files=Array.from(e.target.files);
+    const remaining=5-images.length;
+    if(remaining<=0){alert('Limite de 5 fotos atingido.');return;}
+    const toProcess=files.slice(0,remaining);
+    const compressed=await Promise.all(toProcess.map(compressImage));
+    setImages(p=>[...p,...compressed]);
+  };
+
+  const handleVideoUpload=(e)=>{
+    setVideoError('');
+    const file=e.target.files[0];
+    if(!file)return;
+    // Valida duração do vídeo
+    const url=URL.createObjectURL(file);
+    const vid=document.createElement('video');
+    vid.preload='metadata';
+    vid.onloadedmetadata=()=>{
+      URL.revokeObjectURL(url);
+      if(vid.duration>15){
+        setVideoError('O vídeo deve ter no máximo 15 segundos.');
+        return;
+      }
+      // Salva como base64
+      const reader=new FileReader();
+      reader.onload=ev=>{setVideo({data:ev.target.result,name:file.name,type:file.type});};
+      reader.readAsDataURL(file);
+    };
+    vid.src=url;
+  };
+
+  const reset=()=>{
+    setOs('');setVehicle(null);setUnidade(UNIDADES[0]);setModalidade(MODALIDADES[0]);
+    setDateVendaConsignado('');setTipoAgendamento(AGENDAMENTOS[0]);setLocalAtendimento('');
+    setDateReclamacao('');setDateAgendamento('');setCategorias([]);setOutroCat('');
+    setAreasProblema([]);setDescricao('');setImages([]);setVideo(null);setVideoError('');setDone(false);
+  };
+
+  const handleSave=async(e)=>{
+    e.preventDefault();
+    if(!os.trim())return alert('Informe o número da OS.');
+    if(!vehicle)return alert('OS não localizada na base de dados. Importe a planilha em Gestão.');
+    const catsFinais=categorias.map(c=>c==='Outro'&&outroCat.trim()?outroCat.trim():c).filter(Boolean);
+    if(catsFinais.length===0)return alert('Selecione ao menos uma categoria do problema.');
+    if(!descricao.trim())return alert('O campo Descrição é obrigatório.');
+    if(modalidade==='Consignado'&&!dateVendaConsignado)return alert('Informe a data de venda do consignado.');
+    setSubmitting(true);
+    try{
+      await col('os_retornos').add(stripUndefined({
+        os:os.trim(),responsavel:loggedInUser.user,unidade,modalidade,
+        dateVendaConsignado:modalidade==='Consignado'?dateVendaConsignado:undefined,
+        tipoAgendamento,localAtendimento,vehicleData:vehicle,
+        dateReclamacao,dateAgendamento,categorias:catsFinais,
+        areasProblema,descricao:descricao.trim(),
+        images,video:video||null,
+        status:'Pendente',observacaoConclusao:'',timestamp:Date.now()
+      }));
+      setDone(true);
+    }catch{alert('Erro ao registrar. Tente novamente.');}
+    setSubmitting(false);
+  };
+
+  if(done)return(
+    <div style={{maxWidth:420,margin:'0 auto',background:'#fff',borderRadius:20,border:'1.5px solid var(--border)',padding:40,textAlign:'center'}} className="fade-up">
+      <div style={{width:64,height:64,background:'#EDFAF3',borderRadius:18,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 20px'}}><Icon name="check-circle" size={32}/></div>
+      <h2 style={{fontSize:24,fontWeight:800,margin:'0 0 8px'}}>Retorno Registrado!</h2>
+      <p style={{fontSize:12,color:'var(--muted)',marginBottom:24}}>OS #{os} cadastrada com sucesso.</p>
+      <button onClick={reset} className="btn-primary" style={{width:'100%',padding:14}}>Novo Retorno</button>
+    </div>
+  );
+
+  return(
+    <div className="fade-up" style={{paddingBottom:16}}>
+      <div style={{marginBottom:20}}>
+        <p style={{fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'.15em',color:'var(--red)',marginBottom:4}}>Pós-Venda VRZ</p>
+        <h2 style={{fontSize:32,fontWeight:800,margin:0,letterSpacing:'-.02em'}}>Abrir Retorno de OS</h2>
+      </div>
+
+      <form onSubmit={handleSave} style={{display:'flex',flexDirection:'column',gap:16}}>
+        {/* Dados básicos */}
+        <div className="card" style={{padding:20,display:'flex',flexDirection:'column',gap:16}}>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:14}}>
+            <div>
+              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:6}}>Número da OS *</label>
+              <input type="text" inputMode="numeric" value={os} onChange={e=>handleOSChange(e.target.value)} placeholder="Ex: 9999" className="input" style={{fontSize:22,fontWeight:800}} required/>
+            </div>
+            <div>
+              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:6}}>Unidade Solicitante</label>
+              <select value={unidade} onChange={e=>setUnidade(e.target.value)} className="input" style={{fontWeight:700,appearance:'auto'}}>{UNIDADES.map(u=><option key={u} value={u}>{u}</option>)}</select>
+            </div>
+            <div>
+              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:6}}>Modalidade da Venda</label>
+              <select value={modalidade} onChange={e=>{setModalidade(e.target.value);setDateVendaConsignado('');}} className="input" style={{fontWeight:700,appearance:'auto'}}>{MODALIDADES.map(m=><option key={m} value={m}>{m}</option>)}</select>
+            </div>
+            {/* Campo extra para Consignado */}
+            {modalidade==='Consignado'&&(
+              <div>
+                <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'#1A4EC2',display:'block',marginBottom:6}}>📅 Data de Venda (Consignado) *</label>
+                <input type="date" value={dateVendaConsignado} onChange={e=>setDateVendaConsignado(e.target.value)} className="input" style={{borderColor:'#C0D0F5',background:'#EAF0FF'}} required/>
+              </div>
+            )}
+            <div>
+              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:6}}>Tipo de Agendamento</label>
+              <select value={tipoAgendamento} onChange={e=>setTipoAgendamento(e.target.value)} className="input" style={{fontWeight:700,appearance:'auto'}}>{AGENDAMENTOS.map(a=><option key={a} value={a}>{a}</option>)}</select>
+            </div>
+            <div>
+              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:6}}>Local do Atendimento</label>
+              <input type="text" value={localAtendimento} onChange={e=>setLocalAtendimento(sanitize(e.target.value))} placeholder="Local" className="input" style={{fontWeight:600}}/>
+            </div>
+            <div>
+              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:6}}>Data da Reclamação</label>
+              <input type="date" value={dateReclamacao} onChange={e=>setDateReclamacao(e.target.value)} className="input"/>
+            </div>
+            <div>
+              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:6}}>Data de Agendamento</label>
+              <input type="date" value={dateAgendamento} onChange={e=>setDateAgendamento(e.target.value)} className="input"/>
+            </div>
+            {/* Responsável — só o nome, sem badge */}
+            <div style={{display:'flex',alignItems:'center',gap:10,background:'var(--smoke)',border:'1px solid var(--border)',borderRadius:10,padding:'10px 14px'}}>
+              <div>
+                <p style={{fontSize:8,fontWeight:700,textTransform:'uppercase',color:'var(--muted)',margin:0}}>Responsável</p>
+                <p style={{fontSize:13,fontWeight:800,textTransform:'uppercase',margin:0}}>{loggedInUser.user}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Painel do veículo */}
+        <div className="card" style={{background:'var(--ink)',padding:20,minHeight:90,display:'flex',alignItems:'center'}}>
+          {vehicle?(
+            <div style={{width:'100%'}}>
+              <p style={{fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.12em',color:'rgba(255,255,255,.3)',margin:'0 0 4px'}}>✓ Dados sincronizados da OS</p>
+              <p style={{fontSize:22,fontWeight:800,textTransform:'uppercase',color:'#fff',margin:'0 0 12px'}}>{vehicle.modelo}</p>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(110px,1fr))',gap:10}}>
+                {[['Cliente',vehicle.cliente],['Chassi',vehicle.chassi],['Vendedor',vehicle.vendedor||'—'],['Parceiro',vehicle.parceiro||'—']].map(([l,v])=>(
+                  <div key={l}><p style={{fontSize:7,color:'rgba(255,255,255,.3)',fontWeight:700,textTransform:'uppercase',margin:'0 0 2px'}}>{l}</p><p style={{fontSize:11,color:'rgba(255,255,255,.85)',fontWeight:600,margin:0}}>{v}</p></div>
+                ))}
+              </div>
+            </div>
+          ):(
+            <div style={{width:'100%',textAlign:'center',padding:'12px 0'}}>
+              <Icon name="car" size={28} style={{margin:'0 auto 8px',display:'block',color:'rgba(255,255,255,.15)'}}/>
+              <p style={{fontSize:9,color:'rgba(255,255,255,.25)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',margin:0}}>Digite a OS para carregar o veículo automaticamente</p>
+              {os.trim()&&!vehicle&&<p style={{fontSize:9,color:'#FFAAAA',fontWeight:600,margin:'6px 0 0'}}>OS "{os}" não encontrada. Importe a planilha em Gestão.</p>}
+            </div>
+          )}
+        </div>
+
+        {/* Categorias + Áreas + Descrição */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 2fr',gap:16}}>
+          {/* Categoria do Problema */}
+          <div className="card" style={{padding:20}}>
+            <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:10}}>Categoria do Problema *</label>
+            <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+              {CATEGORIAS.map(cat=>{
+                const isOutro=cat==='Outro';
+                const checked=categorias.includes(cat);
+                return(
+                  <label key={cat} className={`check-chip ${checked?'selected':''}`} onClick={()=>toggleCat(cat)}>
+                    <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
+                    {checked&&<span style={{fontSize:9,lineHeight:1}}>✓</span>}
+                    {isOutro?<span style={{fontStyle:'italic'}}>+ Outro</span>:<span>{cat}</span>}
+                  </label>
+                );
+              })}
+            </div>
+            {/* Campo "Outro" */}
+            {categorias.includes('Outro')&&(
+              <div style={{marginTop:10}}>
+                <input
+                  type="text"
+                  value={outroCat}
+                  onChange={e=>setOutroCat(sanitize(e.target.value))}
+                  className="input"
+                  placeholder="Descreva a categoria..."
+                  style={{fontSize:12,borderColor:'#FFBDBD',background:'var(--red-light)'}}
+                />
+              </div>
+            )}
+            {categorias.length>0&&(
+              <div style={{marginTop:10,paddingTop:10,borderTop:'1px solid var(--border)'}}>
+                <p style={{fontSize:7,fontWeight:800,textTransform:'uppercase',color:'var(--muted)',margin:'0 0 6px'}}>{categorias.length} selecionada(s)</p>
+                <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+                  {categorias.map(c=><span key={c} className="cat-chip">{c==='Outro'&&outroCat?outroCat:c}</span>)}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Área do Problema */}
+          <div className="card" style={{padding:20}}>
+            <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'#1A4EC2',display:'block',marginBottom:10}}>Área do Problema</label>
+            <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+              {AREAS_PROBLEMA.map(area=>{
+                const checked=areasProblema.includes(area);
+                return(
+                  <label key={area} className={`check-chip-area ${checked?'selected':''}`} onClick={()=>toggleArea(area)}>
+                    <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
+                    {checked&&<span style={{fontSize:9,lineHeight:1}}>✓</span>}
+                    <span>{area}</span>
+                  </label>
+                );
+              })}
+            </div>
+            {areasProblema.length>0&&(
+              <div style={{marginTop:10,paddingTop:10,borderTop:'1px solid var(--border)'}}>
+                <p style={{fontSize:7,fontWeight:800,textTransform:'uppercase',color:'#1A4EC2',margin:'0 0 6px'}}>{areasProblema.length} área(s)</p>
+                <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+                  {areasProblema.map(a=><span key={a} className="area-chip">{a}</span>)}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Descrição + Imagens */}
+          <div style={{display:'flex',flexDirection:'column',gap:16}}>
+            <div className="card" style={{padding:20,flex:1}}>
+              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:8}}>Descrição / Relato Inicial *</label>
+              <textarea rows={6} value={descricao} onChange={e=>setDescricao(sanitize(e.target.value))} placeholder="Descreva detalhadamente as ocorrências reportadas pelo cliente..." className="input" style={{resize:'vertical',fontWeight:500,fontSize:12,lineHeight:1.6}} required/>
+            </div>
+            <div className="card" style={{padding:20}}>
+              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:10}}>📷 Fotos (máx. 5) e 🎥 Vídeo (máx. 15s)</label>
+              <div style={{display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}>
+                {/* Botão foto */}
+                {images.length<5&&(
+                  <label style={{width:60,height:60,border:'2px dashed var(--border)',borderRadius:10,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,cursor:'pointer',color:'var(--muted)',transition:'all .15s',position:'relative'}} onMouseEnter={e=>{e.currentTarget.style.borderColor='var(--red)';e.currentTarget.style.color='var(--red)';}} onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.color='var(--muted)';}}>
+                    <Icon name="camera" size={18}/>
+                    <span style={{fontSize:7,fontWeight:700,textTransform:'uppercase'}}>{images.length}/5</span>
+                    <input type="file" accept="image/*" multiple onChange={handleImageUpload} style={{position:'absolute',inset:0,opacity:0,cursor:'pointer'}}/>
+                  </label>
+                )}
+                {/* Botão vídeo */}
+                {!video&&(
+                  <label style={{width:60,height:60,border:'2px dashed var(--border)',borderRadius:10,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,cursor:'pointer',color:'var(--muted)',transition:'all .15s',position:'relative'}} onMouseEnter={e=>{e.currentTarget.style.borderColor='#1A4EC2';e.currentTarget.style.color='#1A4EC2';}} onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.color='var(--muted)';}}>
+                    <Icon name="video" size={18}/>
+                    <span style={{fontSize:7,fontWeight:700,textTransform:'uppercase'}}>Vídeo</span>
+                    <input type="file" accept="video/*" onChange={handleVideoUpload} style={{position:'absolute',inset:0,opacity:0,cursor:'pointer'}}/>
+                  </label>
+                )}
+                {/* Fotos */}
+                {images.map((img,i)=>(
+                  <div key={i} style={{width:60,height:60,borderRadius:10,border:'1px solid var(--border)',position:'relative',overflow:'hidden'}}>
+                    <img src={img} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/>
+                    <button type="button" onClick={()=>setImages(p=>p.filter((_,j)=>j!==i))} style={{position:'absolute',inset:0,background:'rgba(0,0,0,.55)',color:'#fff',border:'none',cursor:'pointer',fontSize:11,fontWeight:800,opacity:0,transition:'opacity .15s'}} onMouseEnter={e=>e.currentTarget.style.opacity=1} onMouseLeave={e=>e.currentTarget.style.opacity=0}>✕</button>
+                  </div>
+                ))}
+                {/* Vídeo thumb */}
+                {video&&(
+                  <div style={{position:'relative',width:60,height:60,borderRadius:10,border:'2px solid #C0D0F5',background:'#EAF0FF',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2}}>
+                    <Icon name="video" size={18} style={{color:'#1A4EC2'}}/>
+                    <span style={{fontSize:7,fontWeight:700,color:'#1A4EC2',textOverflow:'ellipsis',overflow:'hidden',maxWidth:54,whiteSpace:'nowrap'}}>Vídeo</span>
+                    <button type="button" onClick={()=>setVideo(null)} style={{position:'absolute',top:-6,right:-6,width:16,height:16,background:'var(--red)',color:'#fff',border:'none',borderRadius:'50%',cursor:'pointer',fontSize:10,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
+                  </div>
+                )}
+              </div>
+              {videoError&&<p style={{fontSize:10,color:'var(--red)',fontWeight:700,margin:'6px 0 0'}}>{videoError}</p>}
+            </div>
+          </div>
+        </div>
+
+        <button disabled={submitting||!vehicle} className="btn-primary" style={{width:'100%',padding:16,fontSize:12}}>
+          {submitting?<Icon name="refresh-cw" size={18} className="spin"/>:<><Icon name="send" size={16}/> Confirmar Retorno</>}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+// ── StatusView ────────────────────────────────────────────────────────────
+function StatusView({requests,loggedInUser}){
+  const[search,setSearch]=useState('');
+  const[tab,setTab]=useState('todos');
+  const[unidadeFilter,setUnidadeFilter]=useState('todas');
+  const isMaster=loggedInUser?.role==='master';
+
+  const today=todayStr();
+
+  const counts=useMemo(()=>({
+    todos:requests.length,
+    pendente:requests.filter(r=>r.status==='Pendente').length,
+    trabalho:requests.filter(r=>r.status==='Em Trabalho'||r.dateAgendamento===today).length,
+    concluido:requests.filter(r=>r.status==='Concluído').length,
+  }),[requests,today]);
+
+  const filtered=useMemo(()=>{
+    return requests.filter(r=>{
+      const t=search.toLowerCase();
+      const ms=!t||String(r.os).includes(t)||String(r.vehicleData?.cliente||'').toLowerCase().includes(t)||String(r.vehicleData?.modelo||'').toLowerCase().includes(t)||String(r.responsavel||'').toLowerCase().includes(t);
+      const mu=unidadeFilter==='todas'||r.unidade===unidadeFilter;
+      let mt=true;
+      if(tab==='pendente')mt=r.status==='Pendente';
+      else if(tab==='trabalho')mt=r.status==='Em Trabalho'||r.dateAgendamento===today;
+      else if(tab==='concluido')mt=r.status==='Concluído';
+      return ms&&mu&&mt;
+    }).sort((a,b)=>b.timestamp-a.timestamp);
+  },[requests,search,tab,unidadeFilter,today]);
+
+  const handleDelete=async(r)=>{
+    if(!window.confirm(`Excluir OS #${r.os} permanentemente?`))return;
+    try{await col('os_retornos').doc(r.id).delete();}catch(e){alert('Erro ao excluir: '+e.message);}
+  };
+
+  return(
+    <div className="fade-up" style={{paddingBottom:16}}>
+      <div style={{marginBottom:20}}>
+        <p style={{fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'.15em',color:'var(--red)',marginBottom:4}}>Registros do Portal</p>
+        <h2 style={{fontSize:26,fontWeight:800,margin:'0 0 12px',letterSpacing:'-.02em'}}>Histórico de Retornos</h2>
+
+        <div style={{display:'flex',gap:3,background:'var(--smoke)',padding:4,borderRadius:12,border:'1px solid var(--border)',overflowX:'auto',marginBottom:12,WebkitOverflowScrolling:'touch'}}>
+          {[
+            {key:'todos',label:`Todos (${counts.todos})`,color:'var(--ink)'},
+            {key:'pendente',label:`Pendente (${counts.pendente})`,color:'#C45E00'},
+            {key:'trabalho',label:`Em Trabalho (${counts.trabalho})`,color:'#1A4EC2'},
+            {key:'concluido',label:`Concluído (${counts.concluido})`,color:'#0A6B34'},
+          ].map(t=>(
+            <button key={t.key} onClick={()=>setTab(t.key)} style={{padding:'7px 14px',borderRadius:9,fontSize:9,fontWeight:800,textTransform:'uppercase',whiteSpace:'nowrap',border:'none',cursor:'pointer',letterSpacing:'.06em',transition:'all .15s',fontFamily:'Plus Jakarta Sans,sans-serif',background:tab===t.key?'#fff':'transparent',color:tab===t.key?t.color:'var(--muted)',boxShadow:tab===t.key?'0 2px 8px rgba(0,0,0,.08)':'none'}}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div style={{display:'flex',flexWrap:'wrap',gap:8,alignItems:'center'}}>
+          <select value={unidadeFilter} onChange={e=>setUnidadeFilter(e.target.value)} className="input" style={{width:'auto',padding:'8px 14px',fontSize:10,fontWeight:700,appearance:'auto'}}>
+            <option value="todas">Todas as Unidades</option>
+            {UNIDADES.map(u=><option key={u} value={u}>{u}</option>)}
+          </select>
+          <button onClick={()=>exportListPDF(`Aba_${tab}`,filtered)} style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#2563EB',color:'#fff',border:'none',borderRadius:8,fontSize:9,fontWeight:800,textTransform:'uppercase',cursor:'pointer',fontFamily:'Plus Jakarta Sans,sans-serif'}}>
+            <Icon name="file-down" size={13}/> Exportar PDF
+          </button>
+          <div style={{position:'relative',flex:1,minWidth:200}}>
+            <input type="text" placeholder="Buscar OS / Cliente / Responsável..." value={search} onChange={e=>setSearch(e.target.value)} className="input" style={{paddingLeft:36,fontSize:11}}/>
+            <div style={{position:'absolute',left:11,top:'50%',transform:'translateY(-50%)',color:'var(--muted)'}}><Icon name="search" size={14}/></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="scroll-y" style={{maxHeight:'65vh',display:'flex',flexDirection:'column',gap:12}}>
+        {filtered.length===0?(
+          <div style={{padding:'64px 20px',textAlign:'center',background:'#fff',borderRadius:16,border:'1.5px dashed var(--border)'}}>
+            <Icon name="inbox" size={32} style={{margin:'0 auto 10px',display:'block',color:'var(--muted)'}}/>
+            <p style={{fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--muted)',margin:0}}>Nenhum resultado encontrado</p>
+          </div>
+        ):filtered.map(r=>(
+          <div key={r.id} style={{background:'#fff',border:'1.5px solid var(--border)',borderRadius:14,borderLeft:'3px solid var(--red)',overflow:'visible'}}>
+            <div style={{padding:'14px 16px'}}>
+              <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',flexWrap:'wrap',gap:8,marginBottom:10}}>
+                <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap',flex:1,minWidth:0}}>
+                  <span style={{fontSize:14,fontWeight:800}}>OS #{r.os}</span>
+                  <span className="pill">{r.unidade}</span>
+                  <span className="pill" style={{background:'var(--smoke)'}}>{r.modalidade}</span>
+                  <StatusBadge status={r.status}/>
+                  <span className="pill">{r.tipoAgendamento}</span>
+                </div>
+                <div style={{display:'flex',gap:6,flexShrink:0}}>
+                  <button onClick={()=>exportSinglePDF(r)} style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',background:'#2563EB',color:'#fff',border:'none',borderRadius:7,fontSize:9,fontWeight:800,textTransform:'uppercase',cursor:'pointer',fontFamily:'Plus Jakarta Sans,sans-serif'}}>
+                    <Icon name="file-down" size={12}/> PDF
+                  </button>
+                  {isMaster&&(
+                    <button onClick={()=>handleDelete(r)} style={{display:'flex',alignItems:'center',gap:5,padding:'6px 10px',background:'var(--red)',color:'#fff',border:'none',borderRadius:7,fontSize:9,fontWeight:800,cursor:'pointer',fontFamily:'Plus Jakarta Sans,sans-serif'}}>
+                      <Icon name="trash-2" size={12}/>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(110px,1fr))',gap:'6px 16px',marginBottom:12}}>
+                {[['Cliente',r.vehicleData?.cliente||'—'],['Veículo',r.vehicleData?.modelo||'—'],['Chassi',r.vehicleData?.chassi||'—'],['Vendedor',r.vehicleData?.vendedor||'—'],['Responsável',r.responsavel||'—'],['Data',fmtDate(r.timestamp)]].map(([l,v])=>(
+                  <div key={l}><p style={{fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--muted)',margin:'0 0 2px'}}>{l}</p><p style={{fontSize:10,fontWeight:600,color:'var(--ink)',margin:0}}>{v}</p></div>
+                ))}
+              </div>
+
+              {r.categorias?.length>0&&(
+                <div style={{display:'flex',gap:4,flexWrap:'wrap',marginBottom:6}}>
+                  {r.categorias.map(c=><span key={c} className="cat-chip">{c}</span>)}
+                </div>
+              )}
+              {r.areasProblema?.length>0&&(
+                <div style={{display:'flex',gap:4,flexWrap:'wrap',marginBottom:10}}>
+                  {r.areasProblema.map(a=><span key={a} className="area-chip">{a}</span>)}
+                </div>
+              )}
+
+              <div style={{background:'var(--smoke)',border:'1px solid var(--border)',borderRadius:10,padding:'10px 14px',marginBottom:r.observacaoConclusao?10:0}}>
+                <p style={{fontSize:7,fontWeight:800,textTransform:'uppercase',color:'var(--muted)',margin:'0 0 4px'}}>Relato do Problema</p>
+                <p style={{fontSize:11,color:'var(--ink)',margin:0,lineHeight:1.6}}>{r.descricao}</p>
+              </div>
+
+              {r.observacaoConclusao&&(
+                <div style={{background:'#EDFAF3',border:'1px solid #AAE6C5',borderRadius:10,padding:'10px 14px',marginBottom:r.images?.length>0?10:0}}>
+                  <p style={{fontSize:7,fontWeight:800,textTransform:'uppercase',color:'#0A6B34',margin:'0 0 4px'}}>Observação de Conclusão</p>
+                  <p style={{fontSize:11,color:'#0A6B34',margin:0,lineHeight:1.6}}>{r.observacaoConclusao}</p>
+                </div>
+              )}
+
+              {r.images?.length>0&&(
+                <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:8}}>
+                  {r.images.map((img,i)=><img key={i} src={img} style={{width:52,height:52,borderRadius:8,objectFit:'cover',border:'1px solid var(--border)'}} alt=""/>)}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── ManagementView ────────────────────────────────────────────────────────
+function ManagementView({requests,loggedInUser,vehicles,users,onAdd,onDelete,onToggle,onRole}){
+  const[subView,setSubView]=useState('pendente');
+  const[editingCase,setEditingCase]=useState(null);
+  const[search,setSearch]=useState('');
+  const[importData,setImportData]=useState([]);
+  const[showImport,setShowImport]=useState(false);
+  const[toDelete,setToDelete]=useState(null);
+  const canEdit=canDo(loggedInUser?.role,'manageEdit');
+  const isMaster=loggedInUser?.role==='master';
+  const today=todayStr();
+
+  const counts={
+    pendente:requests.filter(r=>r.status==='Pendente').length,
+    trabalho:requests.filter(r=>r.status==='Em Trabalho'||r.dateAgendamento===today).length,
+    concluido:requests.filter(r=>r.status==='Concluído').length,
+  };
+
+  const filtered=useMemo(()=>{
+    return requests.filter(r=>{
+      const t=search.toLowerCase();
+      const ms=!t||String(r.os).includes(t)||String(r.vehicleData?.cliente||'').toLowerCase().includes(t)||String(r.vehicleData?.modelo||'').toLowerCase().includes(t);
+      let mt=true;
+      if(subView==='pendente')mt=r.status==='Pendente';
+      else if(subView==='trabalho')mt=r.status==='Em Trabalho'||r.dateAgendamento===today;
+      else if(subView==='concluido')mt=r.status==='Concluído';
+      return ms&&mt;
+    }).sort((a,b)=>b.timestamp-a.timestamp);
+  },[requests,search,subView,today]);
+
+  const handlePaste=(e)=>{
+    const text=e.clipboardData.getData('text');
+    const lines=text.split(/\r?\n/).filter(l=>l.trim());
+    if(!lines.length)return;
+    const headers=lines[0].split(/[,\t]/).map(h=>h.trim().toUpperCase());
+    const fi=t=>headers.findIndex(h=>t.some(x=>h.includes(x)));
+    const[iO,iM,iCh,iV,iCl,iPa]=[fi(['OS']),fi(['MODELO']),fi(['CHASSI']),fi(['VENDEDOR']),fi(['CLIENTE']),fi(['PARCEIRO'])];
+    const rows=(iO!==-1?lines.slice(1):lines).map(l=>{
+      const v=l.split(/[,\t]/);
+      const g=(i,fb)=>(i!==-1?v[i]:v[fb])?.trim()||'';
+      return{os:g(iO,0),modelo:g(iM,1),chassi:g(iCh,2),vendedor:g(iV,3),cliente:g(iCl,4),parceiro:g(iPa,5)};
+    }).filter(r=>r.os);
+    setImportData(rows);
+  };
+
+  const commitImport=async()=>{
+    if(!importData.length)return;
+    const batch=db.batch();
+    importData.forEach(v=>batch.set(col('vehicles').doc(String(v.os).trim()),v));
+    try{await batch.commit();alert(`${importData.length} veículos importados!`);setImportData([]);setShowImport(false);}
+    catch{alert('Erro ao importar.');}
+  };
+
+  const tabs=[
+    {key:'pendente',label:`Pendentes (${counts.pendente})`,color:'#C45E00'},
+    {key:'trabalho',label:`Em Trabalho (${counts.trabalho})`,color:'#1A4EC2'},
+    {key:'concluido',label:`Concluídos (${counts.concluido})`,color:'#0A6B34'},
+    {key:'vehicles',label:`Veículos (${vehicles.length})`,color:'var(--ink)'},
+    {key:'storage',label:'Armazenamento',color:'#7C3AED'},
+    {key:'usuarios',label:'Usuários',color:'#0D0D0D'},
+  ];
+
+  return(
+    <div className="fade-up" style={{paddingBottom:40}}>
+      <div style={{marginBottom:16}}>
+        <p style={{fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'.15em',color:'var(--red)',marginBottom:4}}>Administração</p>
+        <h2 style={{fontSize:32,fontWeight:800,margin:'0 0 16px',letterSpacing:'-.02em'}}>Gestão de Retornos</h2>
+      </div>
+
+      {/* Botões de ação */}
+      {canEdit&&(
+        <div style={{display:'flex',gap:10,justifyContent:'flex-end',marginBottom:16,flexWrap:'wrap'}}>
+          <button onClick={()=>setShowImport(true)} style={{display:'flex',alignItems:'center',gap:8,padding:'10px 18px',background:'var(--ink)',color:'#fff',border:'none',borderRadius:10,fontSize:10,fontWeight:800,textTransform:'uppercase',cursor:'pointer',letterSpacing:'.08em',borderBottom:'3px solid var(--red)',fontFamily:'Plus Jakarta Sans,sans-serif'}}>
+            <Icon name="file-up" size={14}/> Importar Planilha
+          </button>
+          <button onClick={()=>exportListPDF('Todos_Registros',requests)} style={{display:'flex',alignItems:'center',gap:8,padding:'10px 18px',background:'#2563EB',color:'#fff',border:'none',borderRadius:10,fontSize:10,fontWeight:800,textTransform:'uppercase',cursor:'pointer',letterSpacing:'.08em',fontFamily:'Plus Jakarta Sans,sans-serif'}}>
+            <Icon name="file-down" size={14}/> Exportar PDF
+          </button>
+        </div>
+      )}
+
+      {/* Abas */}
+      <div style={{display:'flex',gap:4,background:'var(--smoke)',padding:4,borderRadius:12,border:'1px solid var(--border)',overflowX:'auto',marginBottom:16,WebkitOverflowScrolling:'touch'}}>
+        {tabs.map(t=>(
+          <button key={t.key} onClick={()=>setSubView(t.key)} style={{padding:'8px 14px',borderRadius:9,fontSize:9,fontWeight:800,textTransform:'uppercase',whiteSpace:'nowrap',border:'none',cursor:'pointer',letterSpacing:'.06em',transition:'all .15s',background:subView===t.key?'#fff':'transparent',color:subView===t.key?t.color:'var(--muted)',boxShadow:subView===t.key?'0 2px 8px rgba(0,0,0,.08)':'none',fontFamily:'Plus Jakarta Sans,sans-serif'}}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Modal confirmar exclusão */}
+      {toDelete&&(
+        <div style={{position:'fixed',inset:0,zIndex:500,background:'rgba(0,0,0,.8)',display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+          <div style={{background:'#fff',borderRadius:20,overflow:'hidden',maxWidth:360,width:'100%'}}>
+            <div style={{background:'var(--red)',padding:'24px 20px',textAlign:'center',color:'#fff'}}>
+              <div style={{width:48,height:48,background:'rgba(255,255,255,.2)',borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 12px'}}><Icon name="trash-2" size={22}/></div>
+              <h3 style={{margin:0,fontSize:16,fontWeight:800}}>Excluir Registro</h3>
+            </div>
+            <div style={{padding:20}}>
+              <p style={{fontSize:11,color:'var(--muted)',textAlign:'center',marginBottom:16}}>Confirmar exclusão permanente da OS #{toDelete.os}?</p>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                <button onClick={()=>setToDelete(null)} className="btn-ghost">Cancelar</button>
+                <button onClick={async()=>{try{await col('os_retornos').doc(toDelete.id).delete();setToDelete(null);}catch{alert('Erro ao excluir.');}}} className="btn-primary">Confirmar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tabela veículos */}
+      {subView==='vehicles'&&(
+        <div className="card" style={{overflow:'hidden'}}>
+          <div style={{overflowX:'auto',maxHeight:'60vh'}} className="scroll-y">
+            <table className="vtable w-full" style={{minWidth:800}}>
+              <thead style={{position:'sticky',top:0}}><tr>{['OS','Modelo','Cliente','Chassi','Vendedor','Parceiro'].map(h=><th key={h}>{h}</th>)}</tr></thead>
+              <tbody>
+                {vehicles.length===0?<tr><td colSpan="6" style={{padding:40,textAlign:'center',fontSize:10,fontWeight:700,textTransform:'uppercase',color:'var(--muted)'}}>Nenhum veículo — importe a planilha</td></tr>:vehicles.map((v,i)=>(
+                  <tr key={i}>
+                    <td style={{fontWeight:800,fontSize:13}}>#{v.os}</td>
+                    <td style={{fontWeight:600,textTransform:'uppercase'}}>{v.modelo}</td>
+                    <td>{v.cliente}</td>
+                    <td className="mono" style={{fontSize:10,fontWeight:700}}>{v.chassi}</td>
+                    <td>{v.vendedor||'—'}</td>
+                    <td>{v.parceiro||'—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Armazenamento */}
+      {subView==='storage'&&(
+        <StorageView requests={requests} vehicles={vehicles}/>
+      )}
+
+      {/* Usuários */}
+      {subView==='usuarios'&&(
+        <UserManagement users={users} loggedInUser={loggedInUser} onAdd={onAdd} onDelete={onDelete} onToggle={onToggle} onRole={onRole}/>
+      )}
+
+      {/* Lista de retornos gerenciáveis */}
+      {['pendente','trabalho','concluido'].includes(subView)&&(
+        <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:12}}>
+          <div style={{position:'relative'}}>
+            <input type="text" placeholder="Buscar OS / Cliente / Modelo..." value={search} onChange={e=>setSearch(e.target.value)} className="input" style={{paddingLeft:36,fontSize:11}}/>
+            <div style={{position:'absolute',left:11,top:'50%',transform:'translateY(-50%)',color:'var(--muted)'}}><Icon name="search" size={14}/></div>
+            {search&&<button onClick={()=>setSearch('')} style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:16}}>×</button>}
+          </div>
+          {filtered.length===0&&<div style={{padding:'48px 20px',textAlign:'center',background:'#fff',borderRadius:14,border:'1.5px dashed var(--border)'}}><p style={{fontSize:9,fontWeight:800,textTransform:'uppercase',color:'var(--muted)',margin:0}}>Nenhum retorno nesta categoria</p></div>}
+          {filtered.map(req=>(
+            <div key={req.id} className="card" style={{display:'flex',alignItems:'center',gap:16,padding:'14px 16px',borderLeft:'3px solid var(--red)'}}>
+              <div style={{textAlign:'center',flexShrink:0,minWidth:60}}>
+                <p style={{fontSize:7,fontWeight:700,textTransform:'uppercase',color:'var(--muted)',margin:0}}>OS</p>
+                <p style={{fontSize:16,fontWeight:800,margin:0}}>#{req.os}</p>
+                <StatusBadge status={req.status}/>
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <p style={{fontSize:12,fontWeight:800,textTransform:'uppercase',margin:'0 0 2px',color:'var(--ink)'}}>{req.vehicleData?.cliente||'—'}</p>
+                <p style={{fontSize:10,fontWeight:600,color:'var(--muted)',margin:'0 0 2px'}}>{req.vehicleData?.modelo||'—'} · {req.unidade}</p>
+                {req.dateAgendamento&&<p style={{fontSize:9,fontWeight:700,color:'#1A4EC2',margin:'0 0 4px'}}>📅 Agend: {req.dateAgendamento}</p>}
+                <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+                  {req.categorias?.slice(0,2).map(c=><span key={c} className="cat-chip">{c}</span>)}
+                  {req.areasProblema?.slice(0,2).map(a=><span key={a} className="area-chip">{a}</span>)}
+                  {(req.categorias?.length>2)&&<span style={{fontSize:9,color:'var(--muted)',fontWeight:700}}>+{req.categorias.length-2}</span>}
+                </div>
+              </div>
+              <div style={{display:'flex',gap:8,flexShrink:0}}>
+                {canEdit?(
+                  <button onClick={()=>setEditingCase(req)} style={{display:'flex',alignItems:'center',gap:6,padding:'9px 16px',background:'var(--ink)',color:'#fff',border:'none',borderBottom:'3px solid var(--red)',borderRadius:10,fontSize:9,fontWeight:800,textTransform:'uppercase',cursor:'pointer',fontFamily:'Plus Jakarta Sans,sans-serif'}}>
+                    <Icon name="edit-2" size={13}/> Gerenciar
+                  </button>
+                ):(
+                  <span style={{fontSize:9,color:'var(--muted)',fontStyle:'italic',padding:'9px 0'}}>Somente leitura</span>
+                )}
+                {isMaster&&(
+                  <button onClick={()=>setToDelete(req)} style={{display:'flex',alignItems:'center',gap:5,padding:'9px 12px',background:'var(--red)',color:'#fff',border:'none',borderRadius:10,fontSize:9,fontWeight:800,cursor:'pointer',fontFamily:'Plus Jakarta Sans,sans-serif'}}>
+                    <Icon name="trash-2" size={13}/>
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Import Modal */}
+      {showImport&&(
+        <div style={{position:'fixed',inset:0,zIndex:300,background:'rgba(0,0,0,.9)',display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+          <div style={{background:'#fff',width:'100%',maxWidth:900,height:'78vh',borderRadius:24,overflow:'hidden',display:'flex',flexDirection:'column'}}>
+            <div style={{padding:'20px 28px',background:'var(--ink)',display:'flex',justifyContent:'space-between',alignItems:'center',borderBottom:'4px solid var(--red)',flexShrink:0}}>
+              <div><h3 style={{margin:0,fontSize:20,fontWeight:800,color:'#fff'}}>Importar Planilha de Veículos</h3><p style={{margin:0,fontSize:9,color:'rgba(255,255,255,.35)',textTransform:'uppercase',letterSpacing:'.1em',marginTop:2}}>Cole os dados do Excel (Ctrl+V)</p></div>
+              <button onClick={()=>{setShowImport(false);setImportData([]);}} style={{width:38,height:38,background:'rgba(255,255,255,.08)',border:'none',borderRadius:10,cursor:'pointer',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name="x" size={20}/></button>
+            </div>
+            <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column',padding:20,gap:16}}>
+              {importData.length===0?(
+                <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',border:'2px dashed var(--border)',borderRadius:16,background:'var(--smoke)',position:'relative'}}>
+                  <Icon name="file-spreadsheet" size={52} style={{color:'var(--border)',marginBottom:12}}/>
+                  <p style={{fontSize:12,fontWeight:700,textTransform:'uppercase',color:'var(--muted)',margin:0}}>Pronto para importar</p>
+                  <p style={{fontSize:10,color:'var(--muted)',margin:'4px 0 0'}}>Selecione no Excel e CTRL+V · Colunas: OS, Modelo, Chassi, Vendedor, Cliente, Parceiro</p>
+                  <textarea onPaste={handlePaste} style={{position:'absolute',inset:0,opacity:0,cursor:'pointer',resize:'none'}} autoFocus/>
+                </div>
+              ):(
+                <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column'}}>
+                  <div style={{flex:1,overflow:'auto',border:'1px solid var(--border)',borderRadius:12}} className="scroll-y">
+                    <table style={{width:'100%',borderCollapse:'collapse',minWidth:700}}>
+                      <thead style={{background:'var(--smoke)',position:'sticky',top:0}}>
+                        <tr>{['OS','Modelo','Chassi','Vendedor','Cliente','Parceiro'].map(h=><th key={h} style={{padding:10,fontSize:9,fontWeight:800,textTransform:'uppercase',color:'var(--muted)',textAlign:'left',borderBottom:'1px solid var(--border)'}}>{h}</th>)}</tr>
+                      </thead>
+                      <tbody>
+                        {importData.map((row,rIdx)=>(
+                          <tr key={rIdx} style={{borderBottom:'1px solid var(--smoke)'}}>
+                            {['os','modelo','chassi','vendedor','cliente','parceiro'].map(k=>(
+                              <td key={k} style={{border:'none',padding:0,height:36}}><input className="excel-input" value={row[k]} onChange={e=>{const d=[...importData];d[rIdx][k]=sanitize(e.target.value);setImportData(d);}}/></td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style={{paddingTop:14,display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
+                    <p style={{fontSize:10,color:'var(--muted)',fontWeight:600}}>{importData.length} registros</p>
+                    <div style={{display:'flex',gap:10}}><button onClick={()=>setImportData([])} className="btn-ghost">Limpar</button><button onClick={commitImport} className="btn-primary">Sincronizar</button></div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EditModal */}
+      {editingCase&&<EditModal req={editingCase} onClose={()=>setEditingCase(null)} isMaster={isMaster}/>}
+    </div>
+  );
+}
+
+// ── StorageView ───────────────────────────────────────────────────────────
+function StorageView({requests,vehicles}){
+  // Calcula tamanho aproximado dos dados
+  const calcSize=(obj)=>{
+    try{return new Blob([JSON.stringify(obj)]).size;}
+    catch{return 0;}
+  };
+
+  const totalRequests=requests.length;
+  const totalVehicles=vehicles.length;
+  const sizeRequests=calcSize(requests);
+  const sizeVehicles=calcSize(vehicles);
+  const totalSize=sizeRequests+sizeVehicles;
+  const limitBytes=1*1024*1024*1024; // 1GB estimado
+  const pct=Math.min(totalSize/limitBytes*100,100);
+
+  const fmt=(b)=>{
+    if(b<1024)return b+'B';
+    if(b<1024*1024)return (b/1024).toFixed(1)+'KB';
+    return (b/1024/1024).toFixed(2)+'MB';
+  };
+
+  const withImages=requests.filter(r=>r.images?.length>0);
+  const withVideo=requests.filter(r=>r.video);
+  const imgBytes=calcSize(requests.map(r=>r.images||[]));
+  const vidBytes=calcSize(requests.map(r=>r.video||null));
+
+  return(
+    <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:16}}>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:12}}>
+        {[
+          {label:'Total de Retornos',v:totalRequests,icon:'file-text',color:'var(--red)'},
+          {label:'Veículos Cadastrados',v:totalVehicles,icon:'car',color:'#1A4EC2'},
+          {label:'Registros com Fotos',v:withImages.length,icon:'camera',color:'#7C3AED'},
+          {label:'Registros com Vídeo',v:withVideo.length,icon:'video',color:'#0A6B34'},
+        ].map((k,i)=>(
+          <div key={i} className="card" style={{padding:20}}>
+            <div style={{width:32,height:32,borderRadius:8,background:k.color+'15',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12,color:k.color}}><Icon name={k.icon} size={16}/></div>
+            <p style={{fontSize:32,fontWeight:800,margin:0,letterSpacing:'-.02em'}}>{k.v}</p>
+            <p style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.08em',color:'var(--muted)',marginTop:4}}>{k.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="card" style={{padding:24}}>
+        <h3 style={{fontSize:10,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',margin:'0 0 16px'}}>Uso de Armazenamento</h3>
+        <div style={{marginBottom:16}}>
+          <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
+            <span style={{fontSize:13,fontWeight:700}}>Espaço utilizado</span>
+            <span style={{fontSize:13,fontWeight:800,color:'var(--red)'}}>{fmt(totalSize)}</span>
+          </div>
+          <div className="progress-track" style={{height:10}}>
+            <div className="progress-fill" style={{width:`${pct}%`,background:pct>80?'var(--red)':pct>60?'#F59E0B':'#0A6B34'}}/>
+          </div>
+          <p style={{fontSize:9,color:'var(--muted)',fontWeight:600,marginTop:6}}>{pct.toFixed(2)}% do armazenamento utilizado</p>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+          {[
+            {label:'Retornos (texto)',size:sizeRequests-imgBytes-vidBytes,color:'var(--red)'},
+            {label:'Fotos',size:imgBytes,color:'#7C3AED'},
+            {label:'Vídeos',size:vidBytes,color:'#1A4EC2'},
+            {label:'Veículos (planilha)',size:sizeVehicles,color:'#0A6B34'},
+          ].map((item,i)=>(
+            <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 16px',background:'var(--smoke)',borderRadius:10,border:'1px solid var(--border)'}}>
+              <div style={{width:10,height:10,borderRadius:'50%',background:item.color,flexShrink:0}}/>
+              <div>
+                <p style={{fontSize:9,fontWeight:700,textTransform:'uppercase',color:'var(--muted)',margin:0}}>{item.label}</p>
+                <p style={{fontSize:14,fontWeight:800,margin:0}}>{fmt(Math.max(item.size,0))}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="card" style={{padding:24}}>
+        <h3 style={{fontSize:10,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',margin:'0 0 16px'}}>Resumo por Status</h3>
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+          {STATUS_LIST.map(s=>{
+            const n=requests.filter(r=>r.status===s).length;
+            const pctS=totalRequests>0?n/totalRequests*100:0;
+            const colors={'Pendente':'#C45E00','Em Trabalho':'#1A4EC2','Concluído':'#0A6B34'};
+            return(
+              <div key={s}>
+                <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+                  <span style={{fontSize:11,fontWeight:700}}>{s}</span>
+                  <span style={{fontSize:11,fontWeight:800,color:colors[s]||'var(--muted)'}}>{n} ({pctS.toFixed(0)}%)</span>
+                </div>
+                <div className="progress-track">
+                  <div className="progress-fill" style={{width:`${pctS}%`,background:colors[s]||'var(--muted)'}}/>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── EditModal ─────────────────────────────────────────────────────────────
+function EditModal({req,onClose,isMaster}){
+  const[status,setStatus]=useState(req.status||'Pendente');
+  const[observacaoConclusao,setObservacaoConclusao]=useState(req.observacaoConclusao||'');
+  const[descricao,setDescricao]=useState(req.descricao||'');
+  const[categorias,setCategorias]=useState(req.categorias||[]);
+  const[areasProblema,setAreasProblema]=useState(req.areasProblema||[]);
+  const[dateAgendamento,setDateAgendamento]=useState(req.dateAgendamento||'');
+  const[saving,setSaving]=useState(false);
+  const[showConclusao,setShowConclusao]=useState(req.status==='Concluído');
+
+  const toggleCat=(cat)=>setCategorias(p=>p.includes(cat)?p.filter(c=>c!==cat):[...p,cat]);
+  const toggleArea=(area)=>setAreasProblema(p=>p.includes(area)?p.filter(a=>a!==area):[...p,area]);
+
+  const handleStatusChange=(s)=>{
+    setStatus(s);
+    if(s==='Concluído')setShowConclusao(true);
+    else setShowConclusao(false);
+  };
+
+  const handleSave=async()=>{
+    if(!descricao.trim())return alert('A descrição não pode ficar em branco.');
+    if(categorias.length===0)return alert('Selecione ao menos uma categoria.');
+    if(status==='Concluído'&&!observacaoConclusao.trim())return alert('Adicione uma observação de conclusão.');
+    setSaving(true);
+    try{
+      const payload={status,descricao:descricao.trim(),categorias,areasProblema,observacaoConclusao:observacaoConclusao.trim()};
+      if(isMaster)payload.dateAgendamento=dateAgendamento;
+      await col('os_retornos').doc(req.id).update(stripUndefined(payload));
+      onClose();
+    }catch{alert('Erro ao salvar.');}
+    setSaving(false);
+  };
+
+  return(
+    <div style={{position:'fixed',inset:0,zIndex:200,background:'rgba(0,0,0,.9)',backdropFilter:'blur(4px)',display:'flex',alignItems:'center',justifyContent:'center',padding:16,overflowY:'auto'}}>
+      <div style={{background:'#fff',width:'100%',maxWidth:820,borderRadius:24,boxShadow:'0 40px 80px rgba(0,0,0,.5)',display:'flex',flexDirection:'column',margin:'auto',borderBottom:'5px solid var(--red)'}}>
+        <div style={{padding:'20px 28px',background:'var(--ink)',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
+          <div>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <h3 style={{margin:0,fontSize:18,fontWeight:800,color:'#fff'}}>OS #{req.os}</h3>
+              <span style={{padding:'3px 10px',borderRadius:999,background:'rgba(255,255,255,.08)',color:'rgba(255,255,255,.5)',border:'1px solid rgba(255,255,255,.12)',fontSize:8,fontWeight:800}}>{req.unidade}</span>
+            </div>
+            <p style={{margin:0,fontSize:9,color:'var(--red)',fontWeight:700,textTransform:'uppercase',marginTop:4}}>{req.vehicleData?.cliente||''}{req.vehicleData?.modelo?' · '+req.vehicleData.modelo:''}</p>
+          </div>
+          <button onClick={onClose} style={{width:38,height:38,background:'rgba(255,255,255,.08)',border:'none',borderRadius:10,cursor:'pointer',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name="x" size={20}/></button>
+        </div>
+
+        <div style={{padding:24,overflowY:'auto',maxHeight:'68vh'}} className="scroll-y">
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:18}}>
+            <div>
+              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--muted)',display:'block',marginBottom:6}}>Status do Chamado</label>
+              <select value={status} onChange={e=>handleStatusChange(e.target.value)} className="input" style={{fontWeight:700,appearance:'auto'}}>
+                {STATUS_LIST.map(s=><option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            {isMaster&&(
+              <div>
+                <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em',color:'#1A4EC2',display:'block',marginBottom:6}}>📅 Data de Agendamento (Master)</label>
+                <input type="date" value={dateAgendamento} onChange={e=>setDateAgendamento(e.target.value)} className="input" style={{borderColor:'#C0D0F5',background:'#EAF0FF'}}/>
+              </div>
+            )}
+          </div>
+
+          <div style={{marginBottom:16}}>
+            <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--muted)',display:'block',marginBottom:6}}>Categorias Vinculadas</label>
+            <div style={{display:'flex',flexWrap:'wrap',gap:6,border:'1.5px solid var(--border)',borderRadius:12,padding:12,background:'var(--smoke)'}}>
+              {CATEGORIAS.map(cat=>{
+                const checked=categorias.includes(cat);
+                return(
+                  <label key={cat} className={`check-chip ${checked?'selected':''}`} onClick={()=>toggleCat(cat)} style={{cursor:'pointer'}}>
+                    <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
+                    {checked&&<span style={{fontSize:9}}>✓</span>}
+                    <span>{cat}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          <div style={{marginBottom:16}}>
+            <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em',color:'#1A4EC2',display:'block',marginBottom:6}}>Áreas do Problema</label>
+            <div style={{display:'flex',flexWrap:'wrap',gap:6,border:'1.5px solid #C0D0F5',borderRadius:12,padding:12,background:'#EAF0FF'}}>
+              {AREAS_PROBLEMA.map(area=>{
+                const checked=areasProblema.includes(area);
+                return(
+                  <label key={area} className={`check-chip-area ${checked?'selected':''}`} onClick={()=>toggleArea(area)} style={{cursor:'pointer'}}>
+                    <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
+                    {checked&&<span style={{fontSize:9}}>✓</span>}
+                    <span>{area}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          <div style={{marginBottom:16}}>
+            <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--muted)',display:'block',marginBottom:6}}>Descrição / Relato Inicial</label>
+            <textarea rows={4} value={descricao} onChange={e=>setDescricao(sanitize(e.target.value))} className="input" style={{resize:'vertical',fontWeight:500,fontSize:12}}/>
+          </div>
+
+          {/* Observação de Conclusão */}
+          {(showConclusao||status==='Concluído')&&(
+            <div style={{background:'#EDFAF3',border:'1.5px solid #AAE6C5',borderRadius:12,padding:16}}>
+              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em',color:'#0A6B34',display:'block',marginBottom:6}}>✓ Observação de Conclusão *</label>
+              <textarea rows={3} value={observacaoConclusao} onChange={e=>setObservacaoConclusao(sanitize(e.target.value))} className="input" style={{resize:'vertical',fontWeight:500,fontSize:12,background:'#fff',borderColor:'#AAE6C5'}} placeholder="Descreva o que foi feito para concluir este retorno..."/>
+            </div>
+          )}
+        </div>
+
+        <div style={{padding:'16px 24px',background:'var(--smoke)',borderTop:'1px solid var(--border)',display:'flex',justifyContent:'flex-end',gap:10,flexShrink:0}}>
+          <button onClick={onClose} className="btn-ghost">Cancelar</button>
+          <button onClick={handleSave} disabled={saving} className="btn-primary" style={{minWidth:160}}>
+            {saving?<><Icon name="refresh-cw" size={14} className="spin"/> Salvando...</>:<><Icon name="save" size={14}/> Salvar Alterações</>}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── DashboardView ─────────────────────────────────────────────────────────
+function DashboardView({requests}){
+  const stats=useMemo(()=>{
+    let pend=0,trabalho=0,concluido=0;
+    const catMap={};const modMap={};const unidadeMap={};const porMes={};
+    const today=todayStr();
+
+    requests.forEach(r=>{
+      if(r.status==='Pendente')pend++;
+      else if(r.status==='Em Trabalho'||r.dateAgendamento===today)trabalho++;
+      else if(r.status==='Concluído')concluido++;
+
+      (r.categorias||[]).forEach(c=>{catMap[c]=(catMap[c]||0)+1;});
+      const mod=r.vehicleData?.modelo||'N/D';
+      modMap[mod]=(modMap[mod]||0)+1;
+      const uni=r.unidade||'Unidade 1';
+      unidadeMap[uni]=(unidadeMap[uni]||0)+1;
+
+      if(r.timestamp){
+        const d=new Date(r.timestamp);
+        const chave=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        porMes[chave]=(porMes[chave]||0)+1;
+      }
+    });
+
+    const topCats=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).slice(0,7);
+    const topMods=Object.entries(modMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const taxaResolucao=requests.length>0?Math.round(concluido/requests.length*100):0;
+    const ultMeses=Object.entries(porMes).sort((a,b)=>a[0].localeCompare(b[0])).slice(-6);
+
+    return{tot:requests.length,pend,trabalho,concluido,topCats,topMods,taxaResolucao,unidadeMap,ultMeses};
+  },[requests]);
+
+  const maxCat=stats.topCats[0]?.[1]||1;
+  const maxMod=stats.topMods[0]?.[1]||1;
+
+  return(
+    <div style={{paddingBottom:40}} className="fade-up">
+      <div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',marginBottom:20}}>
+        <div>
+          <p style={{fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'.15em',color:'var(--red)',marginBottom:4}}>Indicadores Gerenciais</p>
+          <h2 style={{fontSize:36,fontWeight:800,lineHeight:1,color:'var(--ink)',margin:0,letterSpacing:'-.02em'}}>Análises VRZ</h2>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:8,background:'var(--ink)',color:'#fff',padding:'8px 16px',borderRadius:10}}>
+          <span className="pulse-beacon" style={{width:7,height:7,borderRadius:'50%',background:'var(--red)',display:'inline-block'}}/>
+          <span style={{fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em'}}>Tempo real</span>
+        </div>
+      </div>
+
+      {/* KPIs */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:12,marginBottom:16}}>
+        {[
+          {label:'Total Reclamações',v:stats.tot,sub:'registros',icon:'alert-triangle',dark:true},
+          {label:'Pendentes',v:stats.pend,sub:'sem tratativa',icon:'clock',color:'#C45E00',bg:'#FFF4E6',border:'#FFD9A8'},
+          {label:'Em Trabalho',v:stats.trabalho,sub:'agendados hoje',icon:'wrench',color:'#1A4EC2',bg:'#EAF0FF',border:'#C0D0F5'},
+          {label:'Concluídos',v:stats.concluido,sub:`Taxa ${stats.taxaResolucao}%`,icon:'check-check',red:true},
+        ].map((k,i)=>(
+          <div key={i} style={{background:k.dark?'var(--ink)':k.red?'var(--red)':k.bg||'var(--smoke)',color:k.dark||k.red?'#fff':'var(--ink)',borderRadius:14,padding:20,border:(!k.dark&&!k.red&&k.border)?`1.5px solid ${k.border}`:'none'}}>
+            <div style={{width:32,height:32,borderRadius:8,background:k.dark||k.red?'rgba(255,255,255,.12)':k.color+'20'||'var(--border)',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:14,color:k.dark||k.red?'#fff':k.color}}><Icon name={k.icon} size={16}/></div>
+            <p style={{fontSize:36,fontWeight:800,lineHeight:1,margin:0,letterSpacing:'-.02em'}}>{k.v}</p>
+            <p style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.08em',marginTop:6,opacity:.7}}>{k.label}</p>
+            <p style={{fontSize:8,fontWeight:500,marginTop:2,opacity:.4}}>{k.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
+        <div className="card" style={{padding:20}}>
+          <p style={{fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',marginBottom:16}}>Top Ocorrências por Categoria</p>
+          {stats.topCats.length===0?<p style={{fontSize:10,color:'var(--muted)',fontWeight:600}}>Sem dados</p>:stats.topCats.map(([cat,v],i)=>(
+            <div key={i} style={{marginBottom:10}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
+                <span style={{fontSize:9,fontWeight:700,textTransform:'uppercase',color:'var(--ink)'}}>{cat}</span>
+                <span style={{fontSize:9,fontWeight:800,color:'var(--muted)'}}>{v}</span>
+              </div>
+              <div className="progress-track"><div className="progress-fill" style={{width:`${v/maxCat*100}%`,background:i===0?'var(--red)':'var(--ink)'}}/></div>
+            </div>
+          ))}
+        </div>
+
+        <div className="card" style={{padding:20}}>
+          <p style={{fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',marginBottom:16}}>Modelos Mais Reclamados</p>
+          {stats.topMods.length===0?<p style={{fontSize:10,color:'var(--muted)',fontWeight:600}}>Sem dados</p>:stats.topMods.map(([mod,v],i)=>(
+            <div key={i} style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+              <div style={{width:22,height:22,borderRadius:7,background:i===0?'var(--red)':i===1?'var(--ink)':'var(--smoke)',color:i<2?'#fff':'var(--muted)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:800,flexShrink:0}}>{i+1}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
+                  <span style={{fontSize:10,fontWeight:700,textTransform:'uppercase'}}>{mod}</span>
+                  <span style={{fontSize:10,fontWeight:800,color:'var(--muted)'}}>{v}×</span>
+                </div>
+                <div className="progress-track"><div className="progress-fill" style={{width:`${v/maxMod*100}%`,background:i===0?'var(--red)':'var(--ink)'}}/></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:12}}>
+        <div className="card" style={{padding:20}}>
+          <p style={{fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',marginBottom:16}}>Retornos por Mês (últimos 6)</p>
+          {stats.ultMeses.length===0?<p style={{fontSize:10,color:'var(--muted)',fontWeight:600}}>Sem dados</p>:(
+            <div style={{display:'flex',alignItems:'flex-end',gap:8,height:80}}>
+              {stats.ultMeses.map(([mes,v],i)=>{
+                const maxV=Math.max(...stats.ultMeses.map(([,x])=>x),1);
+                const pct=v/maxV*100;
+                const label=mes.split('-').reverse().join('/').slice(0,5);
+                return(
+                  <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+                    <span style={{fontSize:9,fontWeight:800,color:'var(--ink)'}}>{v}</span>
+                    <div style={{width:'100%',height:`${Math.max(pct,8)}%`,background:i===stats.ultMeses.length-1?'var(--red)':'#E8D8D8',borderRadius:'4px 4px 0 0',minHeight:6,transition:'height .3s'}}/>
+                    <span style={{fontSize:7,fontWeight:700,color:'var(--muted)',textAlign:'center'}}>{label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+        <div className="card" style={{padding:20}}>
+          <p style={{fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',marginBottom:16}}>Por Unidade</p>
+          {Object.entries(stats.unidadeMap).length===0?<p style={{fontSize:10,color:'var(--muted)',fontWeight:600}}>Sem dados</p>:Object.entries(stats.unidadeMap).map(([u,v],i)=>(
+            <div key={i} style={{marginBottom:12}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+                <span style={{fontSize:10,fontWeight:700}}>{u}</span>
+                <span style={{fontSize:10,fontWeight:800,color:'var(--muted)'}}>{v}</span>
+              </div>
+              <div className="progress-track"><div className="progress-fill" style={{width:`${v/stats.tot*100}%`,background:'var(--red)'}}/></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── UserManagement ────────────────────────────────────────────────────────
+function UserManagement({users,loggedInUser,onAdd,onDelete,onToggle,onRole}){
+  const[nu,setNu]=useState('');const[np,setNp]=useState('');const[nr,setNr]=useState('solicitante');const[showP,setShowP]=useState(false);
+  const isMaster=loggedInUser?.role==='master';
+
+  return(
+    <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:20}}>
+      {/* Tabela de permissões */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
+        {[
+          {role:'master',items:['✓ Abrir Retorno','✓ Histórico','✓ Gestão (edição)','✓ Indicadores','✓ Usuários','✓ Apagar Retornos','✓ Editar Agendamento'],note:'Único: Lucas.Sabino'},
+          {role:'admin',items:['✓ Abrir Retorno','✓ Histórico','✓ Gestão (leitura)','✓ Indicadores','✗ Usuários','✗ Apagar Retornos','✗ Editar Agendamento']},
+          {role:'solicitante',items:['✓ Abrir Retorno','✓ Histórico','✗ Gestão','✓ Indicadores','✗ Usuários','✗ Apagar Retornos','✗ Editar Agendamento']},
+          {role:'leitor',items:['✗ Abrir Retorno','✓ Histórico','✗ Gestão','✓ Indicadores','✗ Usuários','✗ Apagar Retornos','✗ Editar Agendamento']}
+        ].map(({role,items,note})=>(
+          <div key={role} style={{borderRadius:12,padding:12,background:role==='master'?'#0D0D0D':role==='admin'?'var(--red-light)':role==='solicitante'?'#EAF0FF':'var(--smoke)',border:`1px solid ${role==='master'?'#8B6914':role==='admin'?'#FFBDBD':role==='solicitante'?'#C0D0F5':'var(--border)'}`}}>
+            <RoleBadge role={role}/>
+            {note&&<p style={{fontSize:8,color:role==='master'?'#FFD700':'var(--muted)',fontWeight:700,margin:'4px 0 0',fontStyle:'italic'}}>{note}</p>}
+            <ul style={{fontSize:9,fontWeight:700,listStyle:'none',margin:'8px 0 0',padding:0,color:role==='master'?'rgba(255,255,255,.7)':role==='admin'?'#A81515':role==='solicitante'?'#1A4EC2':'var(--muted)'}}>
+              {items.map((p,i)=><li key={i} style={{marginBottom:2,opacity:p.startsWith('✗')?.4:1}}>{p}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      {isMaster&&(
+        <div className="card" style={{padding:20,display:'flex',flexDirection:'column',gap:16}}>
+          <h3 style={{fontSize:10,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--red)',margin:0}}>Cadastrar Novo Acesso</h3>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12}}>
+            <div><label style={{fontSize:8,fontWeight:700,textTransform:'uppercase',color:'var(--muted)',display:'block',marginBottom:6}}>Usuário</label><input type="text" value={nu} onChange={e=>setNu(e.target.value)} className="input" placeholder="Nome.Sobrenome" style={{fontSize:12}}/></div>
+            <div><label style={{fontSize:8,fontWeight:700,textTransform:'uppercase',color:'var(--muted)',display:'block',marginBottom:6}}>Senha</label>
+              <div style={{position:'relative'}}><input type={showP?'text':'password'} value={np} onChange={e=>setNp(e.target.value)} className="input" placeholder="Senha" style={{fontSize:12,paddingRight:36}}/><button type="button" onClick={()=>setShowP(!showP)} style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',fontSize:12}}>{showP?'👁':'👁‍🗨'}</button></div></div>
+            <div><label style={{fontSize:8,fontWeight:700,textTransform:'uppercase',color:'var(--muted)',display:'block',marginBottom:6}}>Categoria</label>
+              <select value={nr} onChange={e=>setNr(e.target.value)} className="input" style={{fontSize:12,appearance:'auto'}}>
+                <option value="solicitante">Solicitante</option>
+                <option value="leitor">Leitor</option>
+                <option value="admin">Admin</option>
+                {loggedInUser?.user===MASTER_USER&&<option value="master">★ Master</option>}
+              </select></div>
+          </div>
+          <button onClick={()=>{if(!nu||!np)return alert('Preencha todos os campos.');onAdd(nu,np,nr);setNu('');setNp('');setNr('solicitante');}} className="btn-primary" style={{width:'100%'}}>+ Criar Conta</button>
+        </div>
+      )}
+
+      <div className="card" style={{overflow:'hidden'}}>
+        <table className="vtable w-full">
+          <thead><tr><th>Usuário</th><th>Categoria</th><th>Status</th><th style={{textAlign:'right'}}>Ação</th></tr></thead>
+          <tbody>
+            {users.map((u,i)=>{
+              const isMasterUser=u.user===MASTER_USER;
+              return(
+                <tr key={i}>
+                  <td style={{fontWeight:700,textTransform:'uppercase',fontSize:12}}>{u.user}{isMasterUser&&<span style={{marginLeft:6,fontSize:8,color:'#FFD700',fontWeight:800}}>★</span>}</td>
+                  <td>
+                    {isMasterUser?(
+                      <RoleBadge role={u.role||'master'}/>
+                    ):isMaster?(
+                      <select value={u.role||'solicitante'} onChange={e=>onRole(u,e.target.value)} className="badge" style={{cursor:'pointer',border:'none',outline:'none',fontFamily:'Plus Jakarta Sans,sans-serif',background:u.role==='master'?'#0D0D0D':u.role==='admin'?'var(--red)':u.role==='leitor'?'var(--muted)':'#1A4EC2',color:u.role==='master'?'#FFD700':'#fff'}}>
+                        {loggedInUser?.user===MASTER_USER&&<option value="master">★ Master</option>}
+                        <option value="admin">Admin</option>
+                        <option value="solicitante">Solicitante</option>
+                        <option value="leitor">Leitor</option>
+                      </select>
+                    ):(
+                      <RoleBadge role={u.role||'solicitante'}/>
+                    )}
+                  </td>
+                  <td>
+                    {isMaster&&!isMasterUser?(
+                      <button onClick={()=>onToggle(u)} style={{fontSize:9,fontWeight:800,textTransform:'uppercase',padding:'3px 10px',borderRadius:999,cursor:'pointer',border:'1px solid',background:u.active!==false?'#EDFAF3':'#FFF0F0',color:u.active!==false?'#0A6B34':'var(--red)',borderColor:u.active!==false?'#AAE6C5':'#FFBDBD'}}>{u.active!==false?'Ativo':'Desativado'}</button>
+                    ):(
+                      <span style={{fontSize:9,fontWeight:800,textTransform:'uppercase',padding:'3px 10px',borderRadius:999,background:u.active!==false?'#EDFAF3':'#FFF0F0',color:u.active!==false?'#0A6B34':'var(--red)',border:`1px solid ${u.active!==false?'#AAE6C5':'#FFBDBD'}`}}>{u.active!==false?'Ativo':'Desativado'}</span>
+                    )}
+                  </td>
+                  <td style={{textAlign:'right'}}>
+                    {isMasterUser?(
+                      <span style={{fontSize:9,color:'var(--muted)',fontStyle:'italic'}}>★ Protegido</span>
+                    ):isMaster?(
+                      <button onClick={()=>onDelete(u)} style={{display:'inline-flex',alignItems:'center',gap:5,padding:'5px 12px',background:'var(--red)',color:'#fff',border:'none',borderRadius:7,fontSize:9,fontWeight:800,textTransform:'uppercase',cursor:'pointer',fontFamily:'Plus Jakarta Sans,sans-serif'}}><Icon name="trash-2" size={12}/> Excluir</button>
+                    ):(
+                      <span style={{fontSize:9,color:'var(--muted)',fontStyle:'italic'}}>—</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ── LoginView ─────────────────────────────────────────────────────────────
+function LoginView({onLogin,usersList}){
+  const[u,setU]=useState('');const[p,setP]=useState('');const[showP,setShowP]=useState(false);const[err,setErr]=useState('');
+  const submit=e=>{
+    e.preventDefault();
+    const uT=u.trim();const pT=p.trim();
+    if(uT.toLowerCase()==='lucas.sabino'&&pT==='29623298'){
+      onLogin({user:'Lucas.Sabino',pass:'29623298',active:true,role:'master'});
+      return;
+    }
+    const found=usersList.find(x=>x.user.toLowerCase()===uT.toLowerCase()&&x.pass===pT);
+    if(found){if(found.active===false){setErr('Conta desativada. Contate o administrador.');}else{onLogin(found);}}
+    else{setErr('Usuário ou senha incorretos.');}
+  };
+  return(
+    <div className="login-bg" style={{height:'100vh',width:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+      <div style={{background:'#fff',width:'100%',maxWidth:380,borderRadius:24,overflow:'hidden',boxShadow:'0 40px 80px rgba(0,0,0,.4)',borderBottom:'6px solid var(--red)'}} className="fade-in">
+        <div style={{background:'var(--ink)',padding:'40px 32px',textAlign:'center',color:'#fff'}}>
+          <div style={{width:56,height:56,background:'var(--red)',borderRadius:16,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 16px',boxShadow:'0 8px 24px rgba(220,31,31,.4)'}}><Icon name="rotate-ccw" size={28}/></div>
+          <h1 style={{fontSize:32,fontWeight:800,margin:0,letterSpacing:'-.02em',color:'#fff'}}>VRZ Retornos</h1>
+          <p style={{fontSize:9,fontWeight:700,textTransform:'uppercase',letterSpacing:'.18em',color:'rgba(255,255,255,.3)',margin:'8px 0 0'}}>Portal Pós-Venda · Acesso Restrito</p>
+        </div>
+        <form onSubmit={submit} style={{padding:32,display:'flex',flexDirection:'column',gap:20}}>
+          {err&&<div className="shake" style={{background:'var(--red-light)',border:'1px solid #FFBDBD',borderRadius:10,padding:'10px 14px',display:'flex',alignItems:'center',gap:8}}><Icon name="alert-circle" size={14}/><span style={{fontSize:10,fontWeight:700,color:'var(--red)'}}>{err}</span></div>}
+          <div style={{display:'flex',flexDirection:'column',gap:14}}>
+            <div>
+              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.14em',color:'var(--muted)',display:'block',marginBottom:6}}>Usuário</label>
+              <div style={{position:'relative'}}>
+                <div style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',color:'var(--muted)'}}><Icon name="user" size={15}/></div>
+                <input type="text" value={u} onChange={e=>setU(e.target.value)} className="input" style={{paddingLeft:38}} placeholder="Nome.Sobrenome" autoComplete="username" autoCorrect="off" autoCapitalize="none" required/>
+              </div>
+            </div>
+            <div>
+              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.14em',color:'var(--muted)',display:'block',marginBottom:6}}>Senha</label>
+              <div style={{position:'relative'}}>
+                <div style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',color:'var(--muted)'}}><Icon name="lock" size={15}/></div>
+                <input type={showP?'text':'password'} value={p} onChange={e=>setP(e.target.value)} className="input" style={{paddingLeft:38,paddingRight:40,letterSpacing:showP?'normal':'.2em'}} placeholder="••••••••" autoComplete="current-password" required/>
+                <button type="button" onClick={()=>setShowP(!showP)} style={{position:'absolute',right:12,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:4,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  <Icon name={showP?'eye-off':'eye'} size={16}/>
+                </button>
+              </div>
+            </div>
+          </div>
+          <button type="submit" className="btn-primary" style={{width:'100%',padding:15,fontSize:11,letterSpacing:'.1em'}}>Entrar no Portal</button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────
+function App(){
+  const[loggedIn,setLoggedIn]=useState(null);
+  const[view,setView]=useState('request');
+  const[showChangePwd,setShowChangePwd]=useState(false);
+  const[initDone,setInitDone]=useState(false);
+
+  const{data:requests,loading:reqLoad}=useFirestore('os_retornos');
+  const{data:vehicles,loading:vehLoad}=useFirestore('vehicles');
+  const{data:usersData,loading:usrLoad}=useFirestore('users');
+  const[users,setUsers]=useState([]);
+
+  useEffect(()=>{
+    if(usrLoad)return;
+    if(!initDone){
+      INIT_USERS.forEach(async iu=>{
+        const exists=usersData.find(d=>d.user.toLowerCase()===iu.user.toLowerCase());
+        if(!exists){try{await col('users').add(iu);}catch(e){console.warn('seed:',e);}}
+      });
+      setInitDone(true);
+    }
+    setUsers(usersData);
+    setLoggedIn(prev=>{
+      if(!prev)return prev;
+      const fresh=usersData.find(u=>u.user===prev.user);
+      return fresh?{...prev,...fresh}:prev;
+    });
+  },[usersData,usrLoad]);
+
+  useEffect(()=>{
+    const u=auth.onAuthStateChanged(u=>{if(!u)auth.signInAnonymously();});
+    return u;
+  },[]);
+
+  const role=loggedIn?.role||'solicitante';
+  const isMaster=role==='master';
+
+  const addUser=async(u,p,r='solicitante')=>{
+    if(r==='master'&&loggedIn?.user!==MASTER_USER)return alert('Somente o Master pode criar usuários Master.');
+    try{await col('users').add({user:u,pass:p,active:true,role:r});}catch{alert('Erro ao criar usuário.');}
+  };
+  const deleteUser=async(userObj)=>{
+    if(userObj?.user===MASTER_USER)return alert('O Master não pode ser excluído.');
+    if(!window.confirm(`Remover "${userObj?.user}"?`))return;
+    try{await col('users').doc(userObj.id).delete();}catch(e){alert('Erro: '+e.message);}
+  };
+  const toggleUser=async(u)=>{
+    if(u.user===MASTER_USER)return;
+    const s=!(u.active!==false);
+    if(!u.id){setUsers(p=>p.map(x=>x.user===u.user?{...x,active:s}:x));return;}
+    try{await col('users').doc(u.id).update({active:s});}catch(e){alert('Erro: '+e.message);}
+  };
+  const changeRole=async(u,r)=>{
+    if(u.user===MASTER_USER)return;
+    if((r==='master'||u.role==='master')&&loggedIn?.user!==MASTER_USER)return alert('Somente o Master pode alterar a categoria Master.');
+    if(!u.id){setUsers(p=>p.map(x=>x.user===u.user?{...x,role:r}:x));return;}
+    try{await col('users').doc(u.id).update({role:r});}catch(e){alert('Erro: '+e.message);}
+  };
+
+  const defaultView=(r)=>r==='leitor'?'status':'request';
+
+  const navItems=[
+    canDo(role,'newReq')&&{key:'request',icon:'rotate-ccw',label:'Abrir Retorno'},
+    {key:'status',icon:'search',label:'Histórico'},
+    canDo(role,'manage')&&{key:'admin',icon:'settings',label:'Gestão'},
+    canDo(role,'dashboard')&&{key:'dashboard',icon:'bar-chart-2',label:'Indicadores'},
+  ].filter(Boolean);
+
+  const loading=reqLoad||vehLoad||usrLoad;
+
+  if(!loggedIn)return <LoginView onLogin={u=>{setLoggedIn(u);setView(defaultView(u.role));}} usersList={users}/>;
+
+  return(
+    <div style={{height:'100vh',display:'flex',flexDirection:'row',background:'#FAFAF9',overflow:'hidden'}}>
+      <NetworkStatus/>
+      {showChangePwd&&<ChangePasswordModal loggedInUser={loggedIn} onClose={()=>setShowChangePwd(false)}/>}
+
+      {/* Desktop Sidebar */}
+      <nav style={{display:'none',width:220,background:'#0D0D0D',padding:'20px 14px',flexDirection:'column',gap:4,flexShrink:0}} id="desktop-nav">
+        <style>{`@media(min-width:768px){#desktop-nav{display:flex!important}}`}</style>
+        <div style={{display:'flex',alignItems:'center',gap:10,padding:'6px 6px 20px',borderBottom:'1px solid rgba(255,255,255,.08)',marginBottom:8}}>
+          <div style={{width:36,height:36,background:'var(--red)',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 4px 12px rgba(220,31,31,.3)'}}><Icon name="rotate-ccw" size={18}/></div>
+          <div><p style={{fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.14em',color:'rgba(255,255,255,.3)',margin:0,lineHeight:1}}>Portal Retornos</p><h1 style={{fontSize:20,fontWeight:800,margin:0,lineHeight:1.1,color:'#fff'}}>VRZ</h1></div>
+        </div>
+        <div style={{flex:1,display:'flex',flexDirection:'column',gap:2}}>
+          {navItems.map(n=>(
+            <button key={n.key} onClick={()=>setView(n.key)} className={`nav-item ${view===n.key?'active':''}`}>
+              <div className="nav-icon"><Icon name={n.icon} size={15}/></div>
+              {n.label}
+            </button>
+          ))}
+        </div>
+        <div style={{background:'rgba(255,255,255,.06)',borderRadius:12,padding:12,border:'1px solid rgba(255,255,255,.1)'}}>
+          <p style={{fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:'rgba(255,255,255,.3)',margin:'0 0 4px'}}>Logado como</p>
+          <p style={{fontSize:11,fontWeight:800,textTransform:'uppercase',color:role==='master'?'#FFD700':'var(--red)',margin:'0 0 6px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{loggedIn.user}</p>
+          <div style={{marginBottom:10}}><RoleBadge role={loggedIn.role}/></div>
+          <button onClick={()=>setShowChangePwd(true)} style={{width:'100%',padding:'6px 0',marginBottom:8,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.1)',borderRadius:8,fontSize:9,fontWeight:800,textTransform:'uppercase',cursor:'pointer',color:'rgba(255,255,255,.5)',transition:'all .15s',fontFamily:'Plus Jakarta Sans,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',gap:6}} onMouseEnter={e=>{e.currentTarget.style.background='rgba(255,255,255,.14)';e.currentTarget.style.color='#fff';}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(255,255,255,.06)';e.currentTarget.style.color='rgba(255,255,255,.5)';}}>
+            <Icon name="key" size={12}/> Alterar Senha
+          </button>
+          <button onClick={()=>{setLoggedIn(null);setView('request');}} style={{width:'100%',padding:7,background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.12)',borderRadius:8,fontSize:9,fontWeight:800,textTransform:'uppercase',cursor:'pointer',color:'rgba(255,255,255,.5)',transition:'all .15s',fontFamily:'Plus Jakarta Sans,sans-serif'}} onMouseEnter={e=>{e.currentTarget.style.background='var(--red)';e.currentTarget.style.color='#fff';e.currentTarget.style.borderColor='var(--red)';}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(255,255,255,.08)';e.currentTarget.style.color='rgba(255,255,255,.5)';e.currentTarget.style.borderColor='rgba(255,255,255,.12)';}}>Sair</button>
+        </div>
+      </nav>
+
+      {/* Mobile Header */}
+      <div id="mobile-header"><style>{`@media(min-width:768px){#mobile-header{display:none!important}}`}</style>
+        <div style={{position:'fixed',top:0,left:0,right:0,zIndex:100,background:'#fff',borderBottom:'1px solid var(--border)',padding:'10px 16px',display:'flex',alignItems:'center',justifyContent:'space-between',boxShadow:'0 2px 16px rgba(0,0,0,.06)'}}>
+          <div style={{display:'flex',alignItems:'center',gap:10}}>
+            <div style={{width:32,height:32,background:'var(--red)',borderRadius:9,display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name="rotate-ccw" size={15}/></div>
+            <h1 style={{fontSize:20,fontWeight:800,margin:0}}>VRZ Retornos</h1>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <div style={{textAlign:'right'}}><p style={{fontSize:9,fontWeight:800,textTransform:'uppercase',color:'var(--red)',margin:0,maxWidth:100,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{loggedIn.user}</p><RoleBadge role={loggedIn.role}/></div>
+            <button onClick={()=>setShowChangePwd(true)} style={{width:34,height:34,background:'var(--smoke)',border:'1px solid var(--border)',borderRadius:9,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}><Icon name="key" size={15}/></button>
+            <button onClick={()=>{setLoggedIn(null);setView('request');}} style={{width:34,height:34,background:'var(--smoke)',border:'1px solid var(--border)',borderRadius:9,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}><Icon name="log-out" size={15}/></button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main */}
+      <main style={{flex:1,overflowY:'auto',minWidth:0}} className="scroll-y">
+        <div style={{padding:16,paddingTop:0}} id="main-pad">
+          <style>{`@media(min-width:768px){#main-pad{padding:28px!important}}@media(max-width:767px){#main-pad{padding-top:64px!important;padding-bottom:80px!important}}`}</style>
+          <div style={{maxWidth:1200,margin:'0 auto'}}>
+            {loading?<Skeleton/>:(
+              <>
+                {view==='request'&&canDo(role,'newReq')&&<RequestForm loggedInUser={loggedIn} vehiclesDB={vehicles} requests={requests}/>}
+                {view==='status'&&<StatusView requests={requests} loggedInUser={loggedIn}/>}
+                {view==='admin'&&canDo(role,'manage')&&<ManagementView requests={requests} loggedInUser={loggedIn} vehicles={vehicles} users={users} onAdd={addUser} onDelete={deleteUser} onToggle={toggleUser} onRole={changeRole}/>}
+                {view==='dashboard'&&canDo(role,'dashboard')&&<DashboardView requests={requests}/>}
+              </>
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Mobile Bottom Nav */}
+      <div id="mobile-bottom"><style>{`@media(min-width:768px){#mobile-bottom{display:none!important}}`}</style>
+        <div className="bottom-nav">
+          {navItems.map(n=>(
+            <button key={n.key} onClick={()=>setView(n.key)} className={`bottom-nav-btn ${view===n.key?'active':''}`}>
+              <Icon name={n.icon} size={21}/>
+              <span>{n.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
