@@ -1192,29 +1192,48 @@ function StorageView({requests,vehicles}){
 function EditModal({req,onClose,isMaster}){
   const[status,setStatus]=useState(req.status||'Pendente');
   const[observacaoConclusao,setObservacaoConclusao]=useState(req.observacaoConclusao||'');
-  const[descricao,setDescricao]=useState(req.descricao||'');
-  const[categorias,setCategorias]=useState(req.categorias||[]);
-  const[areasProblema,setAreasProblema]=useState(req.areasProblema||[]);
   const[dateAgendamento,setDateAgendamento]=useState(req.dateAgendamento||'');
+  const[reclamacoes,setReclamacoes]=useState(
+    req.reclamacoes?.length>0
+      ? req.reclamacoes.map(r=>({...r,outroCat:'',outroArea:''}))
+      : [{categorias:[],outroCat:'',areasProblema:[],outroArea:'',descricao:''}]
+  );
   const[saving,setSaving]=useState(false);
   const[showConclusao,setShowConclusao]=useState(req.status==='Concluído');
 
-  const toggleCat=(cat)=>setCategorias(p=>p.includes(cat)?p.filter(c=>c!==cat):[...p,cat]);
-  const toggleArea=(area)=>setAreasProblema(p=>p.includes(area)?p.filter(a=>a!==area):[...p,area]);
+  const updateRec=(idx,field,val)=>setReclamacoes(p=>p.map((r,i)=>i===idx?{...r,[field]:val}:r));
+
+  const toggleCat=(idx,cat)=>{
+    const rec=reclamacoes[idx];
+    updateRec(idx,'categorias',rec.categorias.includes(cat)?rec.categorias.filter(c=>c!==cat):[...rec.categorias,cat]);
+  };
+
+  const toggleArea=(idx,area)=>{
+    const rec=reclamacoes[idx];
+    updateRec(idx,'areasProblema',rec.areasProblema.includes(area)?rec.areasProblema.filter(a=>a!==area):[...rec.areasProblema,area]);
+  };
 
   const handleStatusChange=(s)=>{
     setStatus(s);
-    if(s==='Concluído')setShowConclusao(true);
-    else setShowConclusao(false);
+    setShowConclusao(s==='Concluído');
   };
 
   const handleSave=async()=>{
-    if(!descricao.trim())return alert('A descrição não pode ficar em branco.');
-    if(categorias.length===0)return alert('Selecione ao menos uma categoria.');
+    for(let i=0;i<reclamacoes.length;i++){
+      if(reclamacoes[i].categorias.length===0)return alert(`Reclamação ${i+1}: selecione ao menos uma categoria.`);
+      if(!reclamacoes[i].descricao.trim())return alert(`Reclamação ${i+1}: descrição é obrigatória.`);
+    }
     if(status==='Concluído'&&!observacaoConclusao.trim())return alert('Adicione uma observação de conclusão.');
     setSaving(true);
     try{
-      const payload={status,descricao:descricao.trim(),categorias,areasProblema,observacaoConclusao:observacaoConclusao.trim()};
+      const reclamacoesFinais=reclamacoes.map(rec=>({
+        categorias:rec.categorias,
+        areasProblema:rec.areasProblema.map(a=>a==='Outro'&&rec.outroArea.trim()?rec.outroArea.trim():a).filter(Boolean),
+        descricao:rec.descricao.trim(),
+        image:rec.image||null,
+        video:rec.video||null,
+      }));
+      const payload={status,reclamacoes:reclamacoesFinais,observacaoConclusao:observacaoConclusao.trim()};
       if(isMaster)payload.dateAgendamento=dateAgendamento;
       await col('os_retornos').doc(req.id).update(stripUndefined(payload));
       onClose();
@@ -1224,7 +1243,7 @@ function EditModal({req,onClose,isMaster}){
 
   return(
     <div style={{position:'fixed',inset:0,zIndex:200,background:'rgba(0,0,0,.9)',backdropFilter:'blur(4px)',display:'flex',alignItems:'center',justifyContent:'center',padding:16,overflowY:'auto'}}>
-      <div style={{background:'#fff',width:'100%',maxWidth:820,borderRadius:24,boxShadow:'0 40px 80px rgba(0,0,0,.5)',display:'flex',flexDirection:'column',margin:'auto',borderBottom:'5px solid var(--red)'}}>
+      <div style={{background:'#fff',width:'100%',maxWidth:900,borderRadius:24,boxShadow:'0 40px 80px rgba(0,0,0,.5)',display:'flex',flexDirection:'column',margin:'auto',borderBottom:'5px solid var(--red)'}}>
         <div style={{padding:'20px 28px',background:'var(--ink)',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
           <div>
             <div style={{display:'flex',alignItems:'center',gap:10}}>
@@ -1236,8 +1255,9 @@ function EditModal({req,onClose,isMaster}){
           <button onClick={onClose} style={{width:38,height:38,background:'rgba(255,255,255,.08)',border:'none',borderRadius:10,cursor:'pointer',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name="x" size={20}/></button>
         </div>
 
-        <div style={{padding:24,overflowY:'auto',maxHeight:'68vh'}} className="scroll-y">
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:18}}>
+        <div style={{padding:24,overflowY:'auto',maxHeight:'72vh'}} className="scroll-y">
+          {/* Status + Data */}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:20}}>
             <div>
               <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--muted)',display:'block',marginBottom:6}}>Status do Chamado</label>
               <select value={status} onChange={e=>handleStatusChange(e.target.value)} className="input" style={{fontWeight:700,appearance:'auto'}}>
@@ -1252,41 +1272,55 @@ function EditModal({req,onClose,isMaster}){
             )}
           </div>
 
-          <div style={{marginBottom:16}}>
-            <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--muted)',display:'block',marginBottom:6}}>Categorias Vinculadas</label>
-            <div style={{display:'flex',flexWrap:'wrap',gap:6,border:'1.5px solid var(--border)',borderRadius:12,padding:12,background:'var(--smoke)'}}>
-              {CATEGORIAS.map(cat=>{
-                const checked=categorias.includes(cat);
-                return(
-                  <label key={cat} className={`check-chip ${checked?'selected':''}`} onClick={()=>toggleCat(cat)} style={{cursor:'pointer'}}>
-                    <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
-                    {checked&&<span style={{fontSize:9}}>✓</span>}
-                    <span>{cat}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-
-          <div style={{marginBottom:16}}>
-            <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em',color:'#1A4EC2',display:'block',marginBottom:6}}>Áreas do Problema</label>
-            <div style={{display:'flex',flexWrap:'wrap',gap:6,border:'1.5px solid #C0D0F5',borderRadius:12,padding:12,background:'#EAF0FF'}}>
-              {AREAS_PROBLEMA.map(area=>{
-                const checked=areasProblema.includes(area);
-                return(
-                  <label key={area} className={`check-chip-area ${checked?'selected':''}`} onClick={()=>toggleArea(area)} style={{cursor:'pointer'}}>
-                    <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
-                    {checked&&<span style={{fontSize:9}}>✓</span>}
-                    <span>{area}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-
-          <div style={{marginBottom:16}}>
-            <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--muted)',display:'block',marginBottom:6}}>Descrição / Relato Inicial</label>
-            <textarea rows={4} value={descricao} onChange={e=>setDescricao(sanitize(e.target.value))} className="input" style={{resize:'vertical',fontWeight:500,fontSize:12}}/>
+          {/* Reclamações */}
+          <div style={{display:'flex',flexDirection:'column',gap:12,marginBottom:16}}>
+            {reclamacoes.map((rec,idx)=>(
+              <div key={idx} style={{border:'1.5px solid var(--border)',borderRadius:14,padding:16,borderLeft:'3px solid var(--red)'}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
+                  <div style={{width:22,height:22,borderRadius:6,background:'var(--red)',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800}}>{idx+1}</div>
+                  <span style={{fontSize:10,fontWeight:800,textTransform:'uppercase',letterSpacing:'.06em'}}>Reclamação {idx+1}</span>
+                </div>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 2fr',gap:12}}>
+                  <div>
+                    <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--muted)',display:'block',marginBottom:6}}>Categorias</label>
+                    <div style={{display:'flex',flexWrap:'wrap',gap:5,border:'1.5px solid var(--border)',borderRadius:10,padding:10,background:'var(--smoke)'}}>
+                      {CATEGORIAS.map(cat=>{
+                        const checked=rec.categorias.includes(cat);
+                        return(
+                          <label key={cat} className={`check-chip ${checked?'selected':''}`} onClick={()=>toggleCat(idx,cat)} style={{cursor:'pointer'}}>
+                            <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
+                            {checked&&<span style={{fontSize:9}}>✓</span>}
+                            <span>{cat}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em',color:'#1A4EC2',display:'block',marginBottom:6}}>Áreas</label>
+                    <div style={{display:'flex',flexWrap:'wrap',gap:5,border:'1.5px solid #C0D0F5',borderRadius:10,padding:10,background:'#EAF0FF'}}>
+                      {[...AREAS_PROBLEMA,'Outro'].map(area=>{
+                        const checked=rec.areasProblema.includes(area);
+                        return(
+                          <label key={area} className={`check-chip-area ${checked?'selected':''}`} onClick={()=>toggleArea(idx,area)} style={{cursor:'pointer'}}>
+                            <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
+                            {checked&&<span style={{fontSize:9}}>✓</span>}
+                            {area==='Outro'?<span style={{fontStyle:'italic'}}>+ Outro</span>:<span>{area}</span>}
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {rec.areasProblema.includes('Outro')&&(
+                      <input type="text" value={rec.outroArea||''} onChange={e=>updateRec(idx,'outroArea',sanitize(e.target.value))} className="input" placeholder="Descreva a área..." style={{marginTop:8,fontSize:12,borderColor:'#C0D0F5',background:'#EAF0FF'}}/>
+                    )}
+                  </div>
+                  <div>
+                    <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--muted)',display:'block',marginBottom:6}}>Descrição</label>
+                    <textarea rows={4} value={rec.descricao} onChange={e=>updateRec(idx,'descricao',sanitize(e.target.value))} className="input" style={{resize:'vertical',fontWeight:500,fontSize:12}}/>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* Observação de Conclusão */}
@@ -1321,7 +1355,7 @@ function DashboardView({requests}){
       else if(r.status==='Em Trabalho'||r.dateAgendamento===today)trabalho++;
       else if(r.status==='Concluído')concluido++;
 
-      (r.categorias||[]).forEach(c=>{catMap[c]=(catMap[c]||0)+1;});
+      (r.reclamacoes||[]).forEach(rec=>(rec.categorias||[]).forEach(c=>{catMap[c]=(catMap[c]||0)+1;}));
       const mod=r.vehicleData?.modelo||'N/D';
       modMap[mod]=(modMap[mod]||0)+1;
       const uni=r.unidade||'Unidade 1';
