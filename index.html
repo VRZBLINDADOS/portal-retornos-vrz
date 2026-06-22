@@ -514,80 +514,101 @@ const updateRec=(idx,field,val)=>setReclamacoes(p=>p.map((r,i)=>i===idx?{...r,[f
   );
 
   return(
-    <div className="fade-up" style={{paddingBottom:16}}>
-      <div style={{marginBottom:20}}>
-        <p style={{fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'.15em',color:'var(--red)',marginBottom:4}}>Pós-Venda VRZ</p>
-        <h2 style={{fontSize:32,fontWeight:800,margin:0,letterSpacing:'-.02em'}}>Abrir Retorno de OS</h2>
+    <div className="fade-up" style={{paddingBottom:24}}>
+      {/* Header */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:24,flexWrap:'wrap',gap:12}}>
+        <div>
+          <p style={{fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'.15em',color:'var(--red)',margin:'0 0 4px'}}>Pós-Venda VRZ</p>
+          <h2 style={{fontSize:28,fontWeight:800,margin:0,letterSpacing:'-.02em'}}>Abrir Retorno de OS</h2>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:10,background:'var(--smoke)',border:'1px solid var(--border)',borderRadius:12,padding:'10px 16px'}}>
+          <div style={{width:32,height:32,borderRadius:9,background:'var(--red)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+            <Icon name="user" size={15} style={{color:'#fff'}}/>
+          </div>
+          <div>
+            <p style={{fontSize:7,fontWeight:700,textTransform:'uppercase',color:'var(--muted)',margin:0,letterSpacing:'.1em'}}>Responsável</p>
+            <p style={{fontSize:12,fontWeight:800,textTransform:'uppercase',margin:0,color:'var(--ink)'}}>{loggedInUser.user}</p>
+          </div>
+        </div>
       </div>
 
-      <form onSubmit={handleSave} style={{display:'flex',flexDirection:'column',gap:16}}>
-        {/* Dados básicos */}
-        <div className="card" style={{padding:20,display:'flex',flexDirection:'column',gap:16}}>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:14}}>
-            <div>
-              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:6}}>Número da OS *</label>
-              <input type="text" inputMode="numeric" value={os} onChange={e=>handleOSChange(e.target.value)} placeholder="Ex: 9999" className="input" style={{fontSize:22,fontWeight:800}} required/>
+      <form onSubmit={handleSave} style={{display:'flex',flexDirection:'column',gap:14}}>
+
+        {/* Bloco 1: OS + Veículo lado a lado */}
+        <div style={{display:'grid',gridTemplateColumns:'340px 1fr',gap:14,alignItems:'stretch'}}>
+          {/* OS Input */}
+          <div style={{background:'var(--ink)',borderRadius:16,padding:24,display:'flex',flexDirection:'column',justifyContent:'center',gap:8}}>
+            <p style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.14em',color:'rgba(255,255,255,.3)',margin:0}}>Número da OS</p>
+            <input
+              type="text" inputMode="numeric" value={os}
+              onChange={e=>handleOSChange(e.target.value)}
+              placeholder="0000"
+              style={{background:'transparent',border:'none',outline:'none',fontSize:52,fontWeight:800,color:'#fff',fontFamily:'JetBrains Mono,monospace',letterSpacing:'-.02em',width:'100%',caretColor:'var(--red)'}}
+              required
+            />
+            <div style={{height:2,background:'rgba(255,255,255,.1)',borderRadius:999,overflow:'hidden'}}>
+              <div style={{height:'100%',width:os.trim()?'100%':'0%',background:vehicle?'#22C55E':'var(--red)',borderRadius:999,transition:'width .3s,background .3s'}}/>
             </div>
-            <div>
-              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:6}}>Unidade Solicitante</label>
-              <select value={unidade} onChange={e=>setUnidade(e.target.value)} className="input" style={{fontWeight:700,appearance:'auto'}}>{UNIDADES.map(u=><option key={u} value={u}>{u}</option>)}</select>
-            </div>
-            <div>
-              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:6}}>Modalidade da Venda</label>
-              <select value={modalidade} onChange={e=>{setModalidade(e.target.value);setDateVendaConsignado('');}} className="input" style={{fontWeight:700,appearance:'auto'}}>{MODALIDADES.map(m=><option key={m} value={m}>{m}</option>)}</select>
-            </div>
-            {/* Campo extra para Consignado */}
-            {modalidade==='Consignado'&&(
-              <div>
-                <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'#1A4EC2',display:'block',marginBottom:6}}>📅 Data de Venda (Consignado) *</label>
-                <input type="date" value={dateVendaConsignado} onChange={e=>setDateVendaConsignado(e.target.value)} className="input" style={{borderColor:'#C0D0F5',background:'#EAF0FF'}} required/>
+            <p style={{fontSize:9,fontWeight:600,margin:0,color:vehicle?'#4ADE80':'rgba(255,255,255,.25)',transition:'color .2s'}}>
+              {vehicle?`✓ ${vehicle.modelo}`:os.trim()?'OS não encontrada na base':'Digite para buscar automaticamente'}
+            </p>
+          </div>
+
+          {/* Painel veículo */}
+          <div style={{background:vehicle?'#0D1117':'var(--smoke)',border:vehicle?'none':'1.5px dashed var(--border)',borderRadius:16,padding:24,display:'flex',flexDirection:'column',justifyContent:'center',transition:'all .25s',overflow:'hidden',position:'relative'}}>
+            {vehicle?(
+              <>
+                <div style={{position:'absolute',top:0,right:0,width:120,height:120,background:'rgba(255,255,255,.03)',borderRadius:'0 0 0 120px'}}/>
+                <p style={{fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.14em',color:'rgba(255,255,255,.25)',margin:'0 0 6px'}}>Veículo identificado</p>
+                <p style={{fontSize:20,fontWeight:800,textTransform:'uppercase',color:'#fff',margin:'0 0 16px',letterSpacing:'-.01em'}}>{vehicle.modelo}</p>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
+                  {[['Cliente',vehicle.cliente],['Chassi',vehicle.chassi],['Vendedor',vehicle.vendedor||'—'],['Parceiro',vehicle.parceiro||'—']].map(([l,v])=>(
+                    <div key={l} style={{background:'rgba(255,255,255,.05)',borderRadius:10,padding:'10px 12px'}}>
+                      <p style={{fontSize:7,color:'rgba(255,255,255,.3)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',margin:'0 0 3px'}}>{l}</p>
+                      <p style={{fontSize:11,color:'rgba(255,255,255,.85)',fontWeight:600,margin:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{v}</p>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ):(
+              <div style={{textAlign:'center',padding:'8px 0'}}>
+                <div style={{width:48,height:48,borderRadius:14,background:'var(--border)',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 12px'}}>
+                  <Icon name="car" size={22} style={{color:'var(--muted)'}}/>
+                </div>
+                <p style={{fontSize:11,fontWeight:700,color:'var(--muted)',margin:0}}>Dados do veículo aparecerão aqui</p>
+                <p style={{fontSize:9,color:'var(--border)',fontWeight:600,margin:'4px 0 0'}}>após digitar o número da OS</p>
               </div>
             )}
-            <div>
-              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:6}}>Tipo de Agendamento</label>
-              <select value={tipoAgendamento} onChange={e=>setTipoAgendamento(e.target.value)} className="input" style={{fontWeight:700,appearance:'auto'}}>{AGENDAMENTOS.map(a=><option key={a} value={a}>{a}</option>)}</select>
-            </div>
-            <div>
-              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:6}}>Local do Atendimento</label>
-              <input type="text" value={localAtendimento} onChange={e=>setLocalAtendimento(sanitize(e.target.value))} placeholder="Local" className="input" style={{fontWeight:600}}/>
-            </div>
-            <div>
-              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:6}}>Data da Reclamação</label>
-              <input type="date" value={dateReclamacao} onChange={e=>setDateReclamacao(e.target.value)} className="input"/>
-            </div>
-            <div>
-              <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:6}}>Data de Agendamento</label>
-              <input type="date" value={dateAgendamento} onChange={e=>setDateAgendamento(e.target.value)} className="input"/>
-            </div>
-            {/* Responsável — só o nome, sem badge */}
-            <div style={{display:'flex',alignItems:'center',gap:10,background:'var(--smoke)',border:'1px solid var(--border)',borderRadius:10,padding:'10px 14px'}}>
-              <div>
-                <p style={{fontSize:8,fontWeight:700,textTransform:'uppercase',color:'var(--muted)',margin:0}}>Responsável</p>
-                <p style={{fontSize:13,fontWeight:800,textTransform:'uppercase',margin:0}}>{loggedInUser.user}</p>
-              </div>
-            </div>
           </div>
         </div>
 
-        {/* Painel do veículo */}
-        <div className="card" style={{background:'var(--ink)',padding:20,minHeight:90,display:'flex',alignItems:'center'}}>
-          {vehicle?(
-            <div style={{width:'100%'}}>
-              <p style={{fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.12em',color:'rgba(255,255,255,.3)',margin:'0 0 4px'}}>✓ Dados sincronizados da OS</p>
-              <p style={{fontSize:22,fontWeight:800,textTransform:'uppercase',color:'#fff',margin:'0 0 12px'}}>{vehicle.modelo}</p>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(110px,1fr))',gap:10}}>
-                {[['Cliente',vehicle.cliente],['Chassi',vehicle.chassi],['Vendedor',vehicle.vendedor||'—'],['Parceiro',vehicle.parceiro||'—']].map(([l,v])=>(
-                  <div key={l}><p style={{fontSize:7,color:'rgba(255,255,255,.3)',fontWeight:700,textTransform:'uppercase',margin:'0 0 2px'}}>{l}</p><p style={{fontSize:11,color:'rgba(255,255,255,.85)',fontWeight:600,margin:0}}>{v}</p></div>
-                ))}
+        {/* Bloco 2: Campos do atendimento em grid limpo */}
+        <div style={{background:'#fff',border:'1.5px solid var(--border)',borderRadius:16,padding:20}}>
+          <p style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.14em',color:'var(--muted)',margin:'0 0 14px',display:'flex',alignItems:'center',gap:6}}>
+            <span style={{width:4,height:14,background:'var(--red)',borderRadius:999,display:'inline-block'}}/>
+            Dados do Atendimento
+          </p>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:12}}>
+            {[
+              {label:'Unidade Solicitante',content:<select value={unidade} onChange={e=>setUnidade(e.target.value)} className="input" style={{fontWeight:700,appearance:'auto'}}>{UNIDADES.map(u=><option key={u} value={u}>{u}</option>)}</select>},
+              {label:'Modalidade da Venda',content:<select value={modalidade} onChange={e=>{setModalidade(e.target.value);setDateVendaConsignado('');}} className="input" style={{fontWeight:700,appearance:'auto'}}>{MODALIDADES.map(m=><option key={m} value={m}>{m}</option>)}</select>},
+              {label:'Tipo de Agendamento',content:<select value={tipoAgendamento} onChange={e=>setTipoAgendamento(e.target.value)} className="input" style={{fontWeight:700,appearance:'auto'}}>{AGENDAMENTOS.map(a=><option key={a} value={a}>{a}</option>)}</select>},
+              {label:'Local do Atendimento',content:<input type="text" value={localAtendimento} onChange={e=>setLocalAtendimento(sanitize(e.target.value))} placeholder="Ex: Unidade SBC" className="input" style={{fontWeight:600}}/>},
+              {label:'Data da Reclamação',content:<input type="date" value={dateReclamacao} onChange={e=>setDateReclamacao(e.target.value)} className="input"/>},
+              {label:'Data de Agendamento',content:<input type="date" value={dateAgendamento} onChange={e=>setDateAgendamento(e.target.value)} className="input"/>},
+            ].map(({label,content},i)=>(
+              <div key={i}>
+                <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--muted)',display:'block',marginBottom:6}}>{label}</label>
+                {content}
               </div>
-            </div>
-          ):(
-            <div style={{width:'100%',textAlign:'center',padding:'12px 0'}}>
-              <Icon name="car" size={28} style={{margin:'0 auto 8px',display:'block',color:'rgba(255,255,255,.15)'}}/>
-              <p style={{fontSize:9,color:'rgba(255,255,255,.25)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',margin:0}}>Digite a OS para carregar o veículo automaticamente</p>
-              {os.trim()&&!vehicle&&<p style={{fontSize:9,color:'#FFAAAA',fontWeight:600,margin:'6px 0 0'}}>OS "{os}" não encontrada. Importe a planilha em Gestão.</p>}
-            </div>
-          )}
+            ))}
+            {modalidade==='Consignado'&&(
+              <div>
+                <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.1em',color:'#1A4EC2',display:'block',marginBottom:6}}>📅 Data de Venda (Consignado) *</label>
+                <input type="date" value={dateVendaConsignado} onChange={e=>setDateVendaConsignado(e.target.value)} className="input" style={{borderColor:'#C0D0F5',background:'#EAF0FF'}} required/>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Reclamações */}
