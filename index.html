@@ -537,19 +537,19 @@ const updateRec=(idx,field,val)=>setReclamacoes(p=>p.map((r,i)=>i===idx?{...r,[f
         {/* Bloco 1: OS + Veículo lado a lado */}
         <div style={{display:'grid',gridTemplateColumns:'340px 1fr',gap:14,alignItems:'stretch'}}>
           {/* OS Input */}
-          <div style={{background:'var(--ink)',borderRadius:16,padding:24,display:'flex',flexDirection:'column',justifyContent:'center',gap:8}}>
-            <p style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.14em',color:'rgba(255,255,255,.3)',margin:0}}>Número da OS</p>
+        <div style={{background:'#fff',border:'1.5px solid var(--border)',borderRadius:16,padding:24,display:'flex',flexDirection:'column',justifyContent:'center',gap:8}}>
+            <p style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.14em',color:'var(--muted)',margin:0}}>Número da OS *</p>
             <input
               type="text" inputMode="numeric" value={os}
               onChange={e=>handleOSChange(e.target.value)}
               placeholder="0000"
-              style={{background:'transparent',border:'none',outline:'none',fontSize:52,fontWeight:800,color:'#fff',fontFamily:'JetBrains Mono,monospace',letterSpacing:'-.02em',width:'100%',caretColor:'var(--red)'}}
+              style={{background:'transparent',border:'none',outline:'none',fontSize:52,fontWeight:800,color:'var(--ink)',fontFamily:'JetBrains Mono,monospace',letterSpacing:'-.02em',width:'100%',caretColor:'var(--red)'}}
               required
             />
-            <div style={{height:2,background:'rgba(255,255,255,.1)',borderRadius:999,overflow:'hidden'}}>
+            <div style={{height:2,background:'var(--border)',borderRadius:999,overflow:'hidden'}}>
               <div style={{height:'100%',width:os.trim()?'100%':'0%',background:vehicle?'#22C55E':'var(--red)',borderRadius:999,transition:'width .3s,background .3s'}}/>
             </div>
-            <p style={{fontSize:9,fontWeight:600,margin:0,color:vehicle?'#4ADE80':'rgba(255,255,255,.25)',transition:'color .2s'}}>
+            <p style={{fontSize:9,fontWeight:600,margin:0,color:vehicle?'#16A34A':os.trim()?'var(--red)':'var(--muted)',transition:'color .2s'}}>
               {vehicle?`✓ ${vehicle.modelo}`:os.trim()?'OS não encontrada na base':'Digite para buscar automaticamente'}
             </p>
           </div>
@@ -627,55 +627,65 @@ const updateRec=(idx,field,val)=>setReclamacoes(p=>p.map((r,i)=>i===idx?{...r,[f
                 )}
               </div>
 
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 2fr',gap:14}}>
+       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 2fr',gap:14}}>
                 {/* Categoria */}
-                <div>
-                  <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:8}}>Categoria do Problema *</label>
-                  <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
-                    {CATEGORIAS.map(cat=>{
-                      const checked=rec.categorias.includes(cat);
-                      return(
-                        <label key={cat} className={`check-chip ${checked?'selected':''}`} onClick={()=>toggleCat(idx,cat)}>
-                          <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
-                          {checked&&<span style={{fontSize:9,lineHeight:1}}>✓</span>}
-                          {cat==='Outro'?<span style={{fontStyle:'italic'}}>+ Outro</span>:<span>{cat}</span>}
-                        </label>
-                      );
-                    })}
-                  </div>
-                  {rec.categorias.includes('Outro')&&(
-                    <input type="text" value={rec.outroCat} onChange={e=>updateRec(idx,'outroCat',sanitize(e.target.value))} className="input" placeholder="Descreva a categoria..." style={{marginTop:8,fontSize:12,borderColor:'#FFBDBD',background:'var(--red-light)'}}/>
-                  )}
-                  {rec.categorias.length>0&&(
-                    <div style={{marginTop:8,display:'flex',gap:4,flexWrap:'wrap'}}>
-                      {rec.categorias.map(c=><span key={c} className="cat-chip">{c==='Outro'&&rec.outroCat?rec.outroCat:c}</span>)}
+                <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                  <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'flex',alignItems:'center',gap:6}}>
+                    <span style={{width:3,height:12,background:'var(--red)',borderRadius:999,display:'inline-block'}}/>
+                    Categoria do Problema *
+                  </label>
+                  <div style={{border:'1.5px solid var(--border)',borderRadius:14,padding:14,background:'var(--smoke)',display:'flex',flexDirection:'column',gap:10,flex:1}}>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(110px,1fr))',gap:6}}>
+                      {CATEGORIAS.map(cat=>{
+                        const checked=rec.categorias.includes(cat);
+                        return(
+                          <label key={cat} onClick={()=>toggleCat(idx,cat)} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,padding:'7px 10px',borderRadius:9,cursor:'pointer',fontSize:10,fontWeight:checked?700:500,border:`1.5px solid ${checked?'#FFBDBD':'var(--border)'}`,background:checked?'var(--red-light)':'#fff',color:checked?'var(--red)':'var(--ink)',transition:'all .12s',textAlign:'center',userSelect:'none'}}>
+                            <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
+                            {checked&&<span style={{fontSize:9,lineHeight:1,flexShrink:0}}>✓</span>}
+                            <span style={{lineHeight:1.2}}>{cat==='Outro'?'+ Outro':cat}</span>
+                          </label>
+                        );
+                      })}
                     </div>
-                  )}
+                    {rec.categorias.includes('Outro')&&(
+                      <input type="text" value={rec.outroCat} onChange={e=>updateRec(idx,'outroCat',sanitize(e.target.value))} className="input" placeholder="Descreva a categoria..." style={{fontSize:12,borderColor:'#FFBDBD',background:'#fff'}}/>
+                    )}
+                    {rec.categorias.length>0&&(
+                      <div style={{paddingTop:8,borderTop:'1px solid var(--border)',display:'flex',gap:4,flexWrap:'wrap'}}>
+                        {rec.categorias.map(c=><span key={c} className="cat-chip">{c==='Outro'&&rec.outroCat?rec.outroCat:c}</span>)}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Área */}
-                <div>
-                  <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'#1A4EC2',display:'block',marginBottom:8}}>Área do Problema</label>
-                  <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
-                    {[...AREAS_PROBLEMA,'Outro'].map(area=>{
-                      const checked=rec.areasProblema.includes(area);
-                      return(
-                        <label key={area} className={`check-chip-area ${checked?'selected':''}`} onClick={()=>toggleArea(idx,area)}>
-                          <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
-                          {checked&&<span style={{fontSize:9,lineHeight:1}}>✓</span>}
-                          {area==='Outro'?<span style={{fontStyle:'italic'}}>+ Outro</span>:<span>{area}</span>}
-                        </label>
-                      );
-                    })}
-                  </div>
-                  {rec.areasProblema.includes('Outro')&&(
-                    <input type="text" value={rec.outroArea} onChange={e=>updateRec(idx,'outroArea',sanitize(e.target.value))} className="input" placeholder="Descreva a área..." style={{marginTop:8,fontSize:12,borderColor:'#C0D0F5',background:'#EAF0FF'}}/>
-                  )}
-                  {rec.areasProblema.length>0&&(
-                    <div style={{marginTop:8,display:'flex',gap:4,flexWrap:'wrap'}}>
-                      {rec.areasProblema.map(a=><span key={a} className="area-chip">{a==='Outro'&&rec.outroArea?rec.outroArea:a}</span>)}
+                <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                  <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'#1A4EC2',display:'flex',alignItems:'center',gap:6}}>
+                    <span style={{width:3,height:12,background:'#1A4EC2',borderRadius:999,display:'inline-block'}}/>
+                    Área do Problema
+                  </label>
+                  <div style={{border:'1.5px solid #C0D0F5',borderRadius:14,padding:14,background:'#EAF0FF',display:'flex',flexDirection:'column',gap:10,flex:1}}>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(90px,1fr))',gap:6}}>
+                      {[...AREAS_PROBLEMA,'Outro'].map(area=>{
+                        const checked=rec.areasProblema.includes(area);
+                        return(
+                          <label key={area} onClick={()=>toggleArea(idx,area)} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,padding:'7px 10px',borderRadius:9,cursor:'pointer',fontSize:10,fontWeight:checked?700:500,border:`1.5px solid ${checked?'#7DB3F5':'#C0D0F5'}`,background:checked?'#1A4EC2':'#fff',color:checked?'#fff':'#1A4EC2',transition:'all .12s',textAlign:'center',userSelect:'none'}}>
+                            <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
+                            {checked&&<span style={{fontSize:9,lineHeight:1,flexShrink:0}}>✓</span>}
+                            <span style={{lineHeight:1.2}}>{area==='Outro'?'+ Outro':area}</span>
+                          </label>
+                        );
+                      })}
                     </div>
-                  )}
+                    {rec.areasProblema.includes('Outro')&&(
+                      <input type="text" value={rec.outroArea} onChange={e=>updateRec(idx,'outroArea',sanitize(e.target.value))} className="input" placeholder="Descreva a área..." style={{fontSize:12,borderColor:'#C0D0F5',background:'#fff'}}/>
+                    )}
+                    {rec.areasProblema.length>0&&(
+                      <div style={{paddingTop:8,borderTop:'1px solid #C0D0F5',display:'flex',gap:4,flexWrap:'wrap'}}>
+                        {rec.areasProblema.map(a=><span key={a} className="area-chip">{a==='Outro'&&rec.outroArea?rec.outroArea:a}</span>)}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Descrição + Mídia */}
