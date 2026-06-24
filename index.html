@@ -658,18 +658,18 @@ const updateRec=(idx,field,val)=>setReclamacoes(p=>p.map((r,i)=>i===idx?{...r,[f
                   </div>
                 </div>
 
-                {/* Área */}
+              {/* Área */}
                 <div style={{display:'flex',flexDirection:'column',gap:8}}>
-                  <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'#1A4EC2',display:'flex',alignItems:'center',gap:6}}>
-                    <span style={{width:3,height:12,background:'#1A4EC2',borderRadius:999,display:'inline-block'}}/>
+                  <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'flex',alignItems:'center',gap:6}}>
+                    <span style={{width:3,height:12,background:'var(--red)',borderRadius:999,display:'inline-block'}}/>
                     Área do Problema
                   </label>
-                  <div style={{border:'1.5px solid #C0D0F5',borderRadius:14,padding:14,background:'#EAF0FF',display:'flex',flexDirection:'column',gap:10,flex:1}}>
+                  <div style={{border:'1.5px solid var(--border)',borderRadius:14,padding:14,background:'var(--smoke)',display:'flex',flexDirection:'column',gap:10,flex:1}}>
                     <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(90px,1fr))',gap:6}}>
                       {[...AREAS_PROBLEMA,'Outro'].map(area=>{
                         const checked=rec.areasProblema.includes(area);
                         return(
-                          <label key={area} onClick={()=>toggleArea(idx,area)} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,padding:'7px 10px',borderRadius:9,cursor:'pointer',fontSize:10,fontWeight:checked?700:500,border:`1.5px solid ${checked?'#7DB3F5':'#C0D0F5'}`,background:checked?'#1A4EC2':'#fff',color:checked?'#fff':'#1A4EC2',transition:'all .12s',textAlign:'center',userSelect:'none'}}>
+                          <label key={area} onClick={()=>toggleArea(idx,area)} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,padding:'7px 10px',borderRadius:9,cursor:'pointer',fontSize:10,fontWeight:checked?700:500,border:`1.5px solid ${checked?'#FFBDBD':'var(--border)'}`,background:checked?'var(--red-light)':'#fff',color:checked?'var(--red)':'var(--ink)',transition:'all .12s',textAlign:'center',userSelect:'none'}}>
                             <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
                             {checked&&<span style={{fontSize:9,lineHeight:1,flexShrink:0}}>✓</span>}
                             <span style={{lineHeight:1.2}}>{area==='Outro'?'+ Outro':area}</span>
@@ -678,10 +678,10 @@ const updateRec=(idx,field,val)=>setReclamacoes(p=>p.map((r,i)=>i===idx?{...r,[f
                       })}
                     </div>
                     {rec.areasProblema.includes('Outro')&&(
-                      <input type="text" value={rec.outroArea} onChange={e=>updateRec(idx,'outroArea',sanitize(e.target.value))} className="input" placeholder="Descreva a área..." style={{fontSize:12,borderColor:'#C0D0F5',background:'#fff'}}/>
+                      <input type="text" value={rec.outroArea} onChange={e=>updateRec(idx,'outroArea',sanitize(e.target.value))} className="input" placeholder="Descreva a área..." style={{fontSize:12,borderColor:'#FFBDBD',background:'#fff'}}/>
                     )}
                     {rec.areasProblema.length>0&&(
-                      <div style={{paddingTop:8,borderTop:'1px solid #C0D0F5',display:'flex',gap:4,flexWrap:'wrap'}}>
+                      <div style={{paddingTop:8,borderTop:'1px solid var(--border)',display:'flex',gap:4,flexWrap:'wrap'}}>
                         {rec.areasProblema.map(a=><span key={a} className="area-chip">{a==='Outro'&&rec.outroArea?rec.outroArea:a}</span>)}
                       </div>
                     )}
@@ -695,37 +695,68 @@ const updateRec=(idx,field,val)=>setReclamacoes(p=>p.map((r,i)=>i===idx?{...r,[f
                     <textarea rows={4} value={rec.descricao} onChange={e=>updateRec(idx,'descricao',sanitize(e.target.value))} placeholder="Descreva detalhadamente..." className="input" style={{resize:'vertical',fontWeight:500,fontSize:12,lineHeight:1.6}}/>
                   </div>
                   <div>
-                    <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:8}}>📷 1 Foto · 🎥 Vídeo (máx. 10s)</label>
-                    <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
-                      {/* Foto */}
-                      {!rec.image?(
-                        <label style={{width:60,height:60,border:'2px dashed var(--border)',borderRadius:10,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,cursor:'pointer',color:'var(--muted)',transition:'all .15s',position:'relative'}} onMouseEnter={e=>{e.currentTarget.style.borderColor='var(--red)';e.currentTarget.style.color='var(--red)';}} onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.color='var(--muted)';}}>
-                          <Icon name="camera" size={16}/>
-                          <span style={{fontSize:7,fontWeight:700,textTransform:'uppercase'}}>Foto</span>
-                          <input type="file" accept="image/*" onChange={e=>handleImageUpload(idx,e)} style={{position:'absolute',inset:0,opacity:0,cursor:'pointer'}}/>
+                    <label style={{fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'.12em',color:'var(--muted)',display:'block',marginBottom:8}}>Anexos · 1 Foto · 🎥 Vídeo (máx. 10s)</label>
+                    <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                      {/* Área de upload unificada — só aparece se não tiver foto nem vídeo */}
+                      {!rec.image&&!rec.video&&(
+                        <label style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:6,padding:'20px 16px',border:'2px dashed var(--border)',borderRadius:12,cursor:'pointer',background:'var(--smoke)',transition:'all .15s',position:'relative'}}
+                          onMouseEnter={e=>{e.currentTarget.style.borderColor='var(--red)';e.currentTarget.style.background='var(--red-light)';}}
+                          onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.background='var(--smoke)';}}>
+                          <div style={{width:36,height:36,borderRadius:10,background:'#fff',border:'1.5px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                            <Icon name="paperclip" size={16} style={{color:'var(--muted)'}}/>
+                          </div>
+                          <div style={{textAlign:'center'}}>
+                            <p style={{fontSize:11,fontWeight:700,color:'var(--ink)',margin:0}}>Adicionar Foto ou Vídeo</p>
+                            <p style={{fontSize:9,color:'var(--muted)',margin:'2px 0 0'}}>Câmera ou galeria</p>
+                          </div>
+                          {/* input que aceita imagem e vídeo */}
+                          <input type="file" accept="image/*,video/*" style={{position:'absolute',inset:0,opacity:0,cursor:'pointer'}}
+                            onChange={e=>{
+                              const file=e.target.files[0];
+                              if(!file)return;
+                              if(file.type.startsWith('image/')){handleImageUpload(idx,{target:{files:[file]}});}
+                              else if(file.type.startsWith('video/')){handleVideoUpload(idx,{target:{files:[file]}});}
+                            }}/>
                         </label>
-                      ):(
-                        <div style={{width:60,height:60,borderRadius:10,border:'1px solid var(--border)',position:'relative',overflow:'hidden'}}>
-                          <img src={rec.image} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/>
-                          <button type="button" onClick={()=>updateRec(idx,'image',null)} style={{position:'absolute',inset:0,background:'rgba(0,0,0,.55)',color:'#fff',border:'none',cursor:'pointer',fontSize:11,fontWeight:800,opacity:0,transition:'opacity .15s'}} onMouseEnter={e=>e.currentTarget.style.opacity=1} onMouseLeave={e=>e.currentTarget.style.opacity=0}>✕</button>
+                      )}
+                      {/* Previews quando já tem arquivo */}
+                      {(rec.image||rec.video)&&(
+                        <div style={{display:'flex',gap:8,flexWrap:'wrap',alignItems:'flex-start'}}>
+                          {rec.image&&(
+                            <div style={{position:'relative',width:72,height:72,borderRadius:10,overflow:'hidden',border:'1.5px solid var(--border)',flexShrink:0}}>
+                              <img src={rec.image} style={{width:'100%',height:'100%',objectFit:'cover'}} alt="foto"/>
+                              <button type="button" onClick={()=>updateRec(idx,'image',null)}
+                                style={{position:'absolute',top:4,right:4,width:18,height:18,background:'rgba(0,0,0,.65)',color:'#fff',border:'none',borderRadius:'50%',cursor:'pointer',fontSize:10,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>✕</button>
+                            </div>
+                          )}
+                          {rec.video&&(
+                            <div style={{position:'relative',width:72,height:72,borderRadius:10,border:'1.5px solid var(--border)',background:'var(--smoke)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,flexShrink:0}}>
+                              <Icon name="film" size={20} style={{color:'var(--muted)'}}/>
+                              <span style={{fontSize:7,fontWeight:700,color:'var(--muted)',textTransform:'uppercase',textAlign:'center',padding:'0 4px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:64}}>{rec.video.name||'Vídeo'}</span>
+                              <button type="button" onClick={()=>updateRec(idx,'video',null)}
+                                style={{position:'absolute',top:4,right:4,width:18,height:18,background:'rgba(0,0,0,.65)',color:'#fff',border:'none',borderRadius:'50%',cursor:'pointer',fontSize:10,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>✕</button>
+                            </div>
+                          )}
+                          {/* botão para adicionar o que falta */}
+                          {(!rec.image||!rec.video)&&(
+                            <label style={{width:72,height:72,border:'2px dashed var(--border)',borderRadius:10,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,cursor:'pointer',color:'var(--muted)',transition:'all .15s',position:'relative',flexShrink:0}}
+                              onMouseEnter={e=>{e.currentTarget.style.borderColor='var(--red)';e.currentTarget.style.color='var(--red)';}}
+                              onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.color='var(--muted)';}}>
+                              <Icon name="plus" size={16}/>
+                              <span style={{fontSize:7,fontWeight:700,textTransform:'uppercase'}}>{!rec.image?'Foto':'Vídeo'}</span>
+                              <input type="file" accept={!rec.image?'image/*':'video/*'} style={{position:'absolute',inset:0,opacity:0,cursor:'pointer'}}
+                                onChange={e=>{
+                                  const file=e.target.files[0];
+                                  if(!file)return;
+                                  if(file.type.startsWith('image/')){handleImageUpload(idx,{target:{files:[file]}});}
+                                  else{handleVideoUpload(idx,{target:{files:[file]}});}
+                                }}/>
+                            </label>
+                          )}
                         </div>
                       )}
-                      {/* Vídeo */}
-                      {!rec.video?(
-                        <label style={{width:60,height:60,border:'2px dashed var(--border)',borderRadius:10,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,cursor:'pointer',color:'var(--muted)',transition:'all .15s',position:'relative'}} onMouseEnter={e=>{e.currentTarget.style.borderColor='#1A4EC2';e.currentTarget.style.color='#1A4EC2';}} onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.color='var(--muted)';}}>
-                          <Icon name="video" size={16}/>
-                          <span style={{fontSize:7,fontWeight:700,textTransform:'uppercase'}}>Vídeo</span>
-                          <input type="file" accept="video/*" onChange={e=>handleVideoUpload(idx,e)} style={{position:'absolute',inset:0,opacity:0,cursor:'pointer'}}/>
-                        </label>
-                      ):(
-                        <div style={{position:'relative',width:60,height:60,borderRadius:10,border:'2px solid #C0D0F5',background:'#EAF0FF',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2}}>
-                          <Icon name="video" size={16} style={{color:'#1A4EC2'}}/>
-                          <span style={{fontSize:7,fontWeight:700,color:'#1A4EC2'}}>Vídeo</span>
-                          <button type="button" onClick={()=>updateRec(idx,'video',null)} style={{position:'absolute',top:-6,right:-6,width:16,height:16,background:'var(--red)',color:'#fff',border:'none',borderRadius:'50%',cursor:'pointer',fontSize:10,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
-                        </div>
-                      )}
+                      {rec.videoError&&<p style={{fontSize:10,color:'var(--red)',fontWeight:700,margin:0}}>{rec.videoError}</p>}
                     </div>
-                    {rec.videoError&&<p style={{fontSize:10,color:'var(--red)',fontWeight:700,margin:'6px 0 0'}}>{rec.videoError}</p>}
                   </div>
                 </div>
               </div>
