@@ -562,7 +562,7 @@ const updateRec=(idx,field,val)=>setReclamacoes(p=>p.map((r,i)=>i===idx?{...r,[f
                 <p style={{fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.14em',color:'rgba(255,255,255,.25)',margin:'0 0 6px'}}>Veículo identificado</p>
                 <p style={{fontSize:20,fontWeight:800,textTransform:'uppercase',color:'#fff',margin:'0 0 16px',letterSpacing:'-.01em'}}>{vehicle.modelo}</p>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
-                  {[['Cliente',vehicle.cliente],['Chassi',vehicle.chassi],['Vendedor',vehicle.vendedor||'—'],['Parceiro',vehicle.parceiro||'—']].map(([l,v])=>(
+                  {[['Fabricante',vehicle.fabricante||'—'],['Cliente',vehicle.cliente],['Chassi',vehicle.chassi],['Vendedor',vehicle.vendedor||'—'],['Parceiro',vehicle.parceiro||'—']].map(([l,v])=>(
                     <div key={l} style={{background:'rgba(255,255,255,.05)',borderRadius:10,padding:'10px 12px'}}>
                       <p style={{fontSize:7,color:'rgba(255,255,255,.3)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',margin:'0 0 3px'}}>{l}</p>
                       <p style={{fontSize:11,color:'rgba(255,255,255,.85)',fontWeight:600,margin:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{v}</p>
@@ -874,7 +874,7 @@ function StatusView({requests,loggedInUser}){
               </div>
 
               <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(110px,1fr))',gap:'6px 16px',marginBottom:12}}>
-                {[['Cliente',r.vehicleData?.cliente||'—'],['Veículo',r.vehicleData?.modelo||'—'],['Chassi',r.vehicleData?.chassi||'—'],['Vendedor',r.vehicleData?.vendedor||'—'],['Responsável',r.responsavel||'—'],['Data',fmtDate(r.timestamp)]].map(([l,v])=>(
+                {[['Cliente',r.vehicleData?.cliente||'—'],['Fabricante',r.vehicleData?.fabricante||'—'],['Veículo',r.vehicleData?.modelo||'—'],['Chassi',r.vehicleData?.chassi||'—'],['Vendedor',r.vehicleData?.vendedor||'—'],['Responsável',r.responsavel||'—'],['Data',fmtDate(r.timestamp)]].map(([l,v])=>(
                   <div key={l}><p style={{fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:'var(--muted)',margin:'0 0 2px'}}>{l}</p><p style={{fontSize:10,fontWeight:600,color:'var(--ink)',margin:0}}>{v}</p></div>
                 ))}
               </div>
@@ -945,11 +945,11 @@ function ManagementView({requests,loggedInUser,vehicles,users,onAdd,onDelete,onT
     if(!lines.length)return;
     const headers=lines[0].split(/[,\t]/).map(h=>h.trim().toUpperCase());
     const fi=t=>headers.findIndex(h=>t.some(x=>h.includes(x)));
-    const[iO,iM,iCh,iV,iCl,iPa]=[fi(['OS']),fi(['MODELO']),fi(['CHASSI']),fi(['VENDEDOR']),fi(['CLIENTE']),fi(['PARCEIRO'])];
+    const[iO,iM,iCh,iV,iCl,iPa,iFa]=[fi(['OS']),fi(['MODELO']),fi(['CHASSI']),fi(['VENDEDOR']),fi(['CLIENTE']),fi(['PARCEIRO']),fi(['FABRICANTE'])];
     const rows=(iO!==-1?lines.slice(1):lines).map(l=>{
       const v=l.split(/[,\t]/);
       const g=(i,fb)=>(i!==-1?v[i]:v[fb])?.trim()||'';
-      return{os:g(iO,0),modelo:g(iM,1),chassi:g(iCh,2),vendedor:g(iV,3),cliente:g(iCl,4),parceiro:g(iPa,5)};
+      return{os:g(iO,0),fabricante:g(iFa,-1),modelo:g(iM,1),chassi:g(iCh,2),vendedor:g(iV,3),cliente:g(iCl,4),parceiro:g(iPa,5)};
     }).filter(r=>r.os);
     setImportData(rows);
   };
@@ -1023,11 +1023,12 @@ function ManagementView({requests,loggedInUser,vehicles,users,onAdd,onDelete,onT
         <div className="card" style={{overflow:'hidden'}}>
           <div style={{overflowX:'auto',maxHeight:'60vh'}} className="scroll-y">
             <table className="vtable w-full" style={{minWidth:800}}>
-              <thead style={{position:'sticky',top:0}}><tr>{['OS','Modelo','Cliente','Chassi','Vendedor','Parceiro'].map(h=><th key={h}>{h}</th>)}</tr></thead>
+              <thead style={{position:'sticky',top:0}}><tr>{['OS','Fabricante','Modelo','Cliente','Chassi','Vendedor','Parceiro'].map(h=><th key={h}>{h}</th>)}</tr></thead>
               <tbody>
-                {vehicles.length===0?<tr><td colSpan="6" style={{padding:40,textAlign:'center',fontSize:10,fontWeight:700,textTransform:'uppercase',color:'var(--muted)'}}>Nenhum veículo — importe a planilha</td></tr>:vehicles.map((v,i)=>(
+                {vehicles.length===0?<tr><td colSpan="7" style={{padding:40,textAlign:'center',fontSize:10,fontWeight:700,textTransform:'uppercase',color:'var(--muted)'}}>Nenhum veículo — importe a planilha</td></tr>:vehicles.map((v,i)=>(
                   <tr key={i}>
                     <td style={{fontWeight:800,fontSize:13}}>#{v.os}</td>
+                    <td style={{fontWeight:600,textTransform:'uppercase'}}>{v.fabricante||'—'}</td>
                     <td style={{fontWeight:600,textTransform:'uppercase'}}>{v.modelo}</td>
                     <td>{v.cliente}</td>
                     <td className="mono" style={{fontSize:10,fontWeight:700}}>{v.chassi}</td>
@@ -1113,7 +1114,7 @@ function ManagementView({requests,loggedInUser,vehicles,users,onAdd,onDelete,onT
                 <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',border:'2px dashed var(--border)',borderRadius:16,background:'var(--smoke)',position:'relative'}}>
                   <Icon name="file-spreadsheet" size={52} style={{color:'var(--border)',marginBottom:12}}/>
                   <p style={{fontSize:12,fontWeight:700,textTransform:'uppercase',color:'var(--muted)',margin:0}}>Pronto para importar</p>
-                  <p style={{fontSize:10,color:'var(--muted)',margin:'4px 0 0'}}>Selecione no Excel e CTRL+V · Colunas: OS, Modelo, Chassi, Vendedor, Cliente, Parceiro</p>
+                  <p style={{fontSize:10,color:'var(--muted)',margin:'4px 0 0'}}>Selecione no Excel e CTRL+V · Colunas: OS, Fabricante, Modelo, Chassi, Vendedor, Cliente, Parceiro</p>
                   <textarea onPaste={handlePaste} style={{position:'absolute',inset:0,opacity:0,cursor:'pointer',resize:'none'}} autoFocus/>
                 </div>
               ):(
@@ -1121,12 +1122,12 @@ function ManagementView({requests,loggedInUser,vehicles,users,onAdd,onDelete,onT
                   <div style={{flex:1,overflow:'auto',border:'1px solid var(--border)',borderRadius:12}} className="scroll-y">
                     <table style={{width:'100%',borderCollapse:'collapse',minWidth:700}}>
                       <thead style={{background:'var(--smoke)',position:'sticky',top:0}}>
-                        <tr>{['OS','Modelo','Chassi','Vendedor','Cliente','Parceiro'].map(h=><th key={h} style={{padding:10,fontSize:9,fontWeight:800,textTransform:'uppercase',color:'var(--muted)',textAlign:'left',borderBottom:'1px solid var(--border)'}}>{h}</th>)}</tr>
+                        <tr>{['OS','Fabricante','Modelo','Chassi','Vendedor','Cliente','Parceiro'].map(h=><th key={h} style={{padding:10,fontSize:9,fontWeight:800,textTransform:'uppercase',color:'var(--muted)',textAlign:'left',borderBottom:'1px solid var(--border)'}}>{h}</th>)}</tr>
                       </thead>
                       <tbody>
                         {importData.map((row,rIdx)=>(
                           <tr key={rIdx} style={{borderBottom:'1px solid var(--smoke)'}}>
-                            {['os','modelo','chassi','vendedor','cliente','parceiro'].map(k=>(
+                            {['os','fabricante','modelo','chassi','vendedor','cliente','parceiro'].map(k=>(
                               <td key={k} style={{border:'none',padding:0,height:36}}><input className="excel-input" value={row[k]} onChange={e=>{const d=[...importData];d[rIdx][k]=sanitize(e.target.value);setImportData(d);}}/></td>
                             ))}
                           </tr>
