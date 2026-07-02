@@ -639,11 +639,10 @@ const updateRec=(idx,field,val)=>setReclamacoes(p=>p.map((r,i)=>i===idx?{...r,[f
                       {CATEGORIAS.map(cat=>{
                         const checked=rec.categorias.includes(cat);
                         return(
-                          <label key={cat} onClick={()=>toggleCat(idx,cat)} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,padding:'7px 10px',borderRadius:9,cursor:'pointer',fontSize:10,fontWeight:checked?700:500,border:`1.5px solid ${checked?'#FFBDBD':'var(--border)'}`,background:checked?'var(--red-light)':'#fff',color:checked?'var(--red)':'var(--ink)',transition:'all .12s',textAlign:'center',userSelect:'none'}}>
-                            <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
+                          <div key={cat} onClick={()=>toggleCat(idx,cat)} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,padding:'7px 10px',borderRadius:9,cursor:'pointer',fontSize:10,fontWeight:checked?700:500,border:`1.5px solid ${checked?'#FFBDBD':'var(--border)'}`,background:checked?'var(--red-light)':'#fff',color:checked?'var(--red)':'var(--ink)',transition:'all .12s',textAlign:'center',userSelect:'none'}}>
                             {checked&&<span style={{fontSize:9,lineHeight:1,flexShrink:0}}>✓</span>}
                             <span style={{lineHeight:1.2}}>{cat==='Outro'?'+ Outro':cat}</span>
-                          </label>
+                          </div>
                         );
                       })}
                     </div>
@@ -669,11 +668,10 @@ const updateRec=(idx,field,val)=>setReclamacoes(p=>p.map((r,i)=>i===idx?{...r,[f
                       {[...AREAS_PROBLEMA,'Outro'].map(area=>{
                         const checked=rec.areasProblema.includes(area);
                         return(
-                          <label key={area} onClick={()=>toggleArea(idx,area)} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,padding:'7px 10px',borderRadius:9,cursor:'pointer',fontSize:10,fontWeight:checked?700:500,border:`1.5px solid ${checked?'#FFBDBD':'var(--border)'}`,background:checked?'var(--red-light)':'#fff',color:checked?'var(--red)':'var(--ink)',transition:'all .12s',textAlign:'center',userSelect:'none'}}>
-                            <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
+                          <div key={area} onClick={()=>toggleArea(idx,area)} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,padding:'7px 10px',borderRadius:9,cursor:'pointer',fontSize:10,fontWeight:checked?700:500,border:`1.5px solid ${checked?'#FFBDBD':'var(--border)'}`,background:checked?'var(--red-light)':'#fff',color:checked?'var(--red)':'var(--ink)',transition:'all .12s',textAlign:'center',userSelect:'none'}}>
                             {checked&&<span style={{fontSize:9,lineHeight:1,flexShrink:0}}>✓</span>}
                             <span style={{lineHeight:1.2}}>{area==='Outro'?'+ Outro':area}</span>
-                          </label>
+                          </div>
                         );
                       })}
                     </div>
@@ -1399,11 +1397,10 @@ function EditModal({req,onClose,isMaster}){
                       {CATEGORIAS.map(cat=>{
                         const checked=rec.categorias.includes(cat);
                         return(
-                          <label key={cat} className={`check-chip ${checked?'selected':''}`} onClick={()=>toggleCat(idx,cat)} style={{cursor:'pointer'}}>
-                            <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
+                          <div key={cat} className={`check-chip ${checked?'selected':''}`} onClick={()=>toggleCat(idx,cat)} style={{cursor:'pointer'}}>
                             {checked&&<span style={{fontSize:9}}>✓</span>}
                             <span>{cat}</span>
-                          </label>
+                          </div>
                         );
                       })}
                     </div>
@@ -1414,11 +1411,10 @@ function EditModal({req,onClose,isMaster}){
                       {[...AREAS_PROBLEMA,'Outro'].map(area=>{
                         const checked=rec.areasProblema.includes(area);
                         return(
-                          <label key={area} className={`check-chip-area ${checked?'selected':''}`} onClick={()=>toggleArea(idx,area)} style={{cursor:'pointer'}}>
-                            <input type="checkbox" checked={checked} onChange={()=>{}} style={{display:'none'}}/>
+                          <div key={area} className={`check-chip-area ${checked?'selected':''}`} onClick={()=>toggleArea(idx,area)} style={{cursor:'pointer'}}>
                             {checked&&<span style={{fontSize:9}}>✓</span>}
                             {area==='Outro'?<span style={{fontStyle:'italic'}}>+ Outro</span>:<span>{area}</span>}
-                          </label>
+                          </div>
                         );
                       })}
                     </div>
