@@ -978,12 +978,27 @@ function ManagementView({requests,loggedInUser,vehicles,users,onAdd,onDelete,onT
     setImportData(rows);
   };
 
+  const [importing,setImporting]=useState(false);
+  const [importProgress,setImportProgress]=useState({done:0,total:0});
   const commitImport=async()=>{
     if(!importData.length)return;
-    const batch=db.batch();
-    importData.forEach(v=>batch.set(col('vehicles').doc(String(v.os).trim()),v));
-    try{await batch.commit();alert(`${importData.length} veículos importados!`);setImportData([]);setShowImport(false);}
-    catch{alert('Erro ao importar.');}
+    setImporting(true);
+    setImportProgress({done:0,total:importData.length});
+    const CHUNK=450;
+    try{
+      for(let i=0;i<importData.length;i+=CHUNK){
+        const slice=importData.slice(i,i+CHUNK);
+        const batch=db.batch();
+        slice.forEach(v=>batch.set(col('vehicles').doc(String(v.os).trim()),v));
+        await batch.commit();
+        setImportProgress({done:Math.min(i+CHUNK,importData.length),total:importData.length});
+      }
+      alert(`${importData.length} veículos importados!`);
+      setImportData([]);setShowImport(false);
+    }catch(e){
+      alert('Erro ao importar: '+(e?.message||'tente novamente.'));
+    }
+    setImporting(false);
   };
 
   const tabs=[
@@ -1170,8 +1185,8 @@ function ManagementView({requests,loggedInUser,vehicles,users,onAdd,onDelete,onT
                     </table>
                   </div>
                   <div style={{paddingTop:14,display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
-                    <p style={{fontSize:10,color:'var(--muted)',fontWeight:600}}>{importData.length} registros</p>
-                    <div style={{display:'flex',gap:10}}><button onClick={()=>setImportData([])} className="btn-ghost">Limpar</button><button onClick={commitImport} className="btn-primary">Sincronizar</button></div>
+                    <p style={{fontSize:10,color:'var(--muted)',fontWeight:600}}>{importing?`Sincronizando ${importProgress.done}/${importProgress.total}...`:`${importData.length} registros`}</p>
+                    <div style={{display:'flex',gap:10}}><button onClick={()=>setImportData([])} className="btn-ghost" disabled={importing}>Limpar</button><button onClick={commitImport} className="btn-primary" disabled={importing}>{importing?<Icon name="refresh-cw" size={14} className="spin"/>:'Sincronizar'}</button></div>
                   </div>
                 </div>
               )}
